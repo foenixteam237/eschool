@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import StudentReportCardModal from "@/components/admin/student-report-card-modal"; // Import the modal
 
 export default function AdminGradesPage() {
     const router = useRouter();
     const [selectedSequence, setSelectedSequence] = useState("1");
     const [searchTerm, setSearchTerm] = useState("");
+    const [isGlobalExportOpen, setIsGlobalExportOpen] = useState(false); // State for global export modal
 
     const stats = [
         { label: "Moyenne Générale", value: "12.8/20", trend: "+0.5", color: "text-blue-600", bg: "bg-blue-50" },
@@ -21,12 +23,15 @@ export default function AdminGradesPage() {
     ];
 
     const sequences = [
-        { id: "1", name: "Séquence 1", trimester: "1er Trimestre", period: "Sept - Oct" },
-        { id: "2", name: "Séquence 2", trimester: "1er Trimestre", period: "Nov - Déc" },
-        { id: "3", name: "Séquence 3", trimester: "2ème Trimestre", period: "Jan - Fév" },
-        { id: "4", name: "Séquence 4", trimester: "2ème Trimestre", period: "Fév - Mars" },
-        { id: "5", name: "Séquence 5", trimester: "3ème Trimestre", period: "Avr - Mai" },
-        { id: "6", name: "Séquence 6", trimester: "3ème Trimestre", period: "Juin - Juil" },
+        { id: "1", name: "Séquence 1", trimester: "1er Trimestre", period: "Sept - Oct", type: "sequence" },
+        { id: "2", name: "Séquence 2", trimester: "1er Trimestre", period: "Nov - Déc", type: "sequence" },
+        { id: "T1", name: "1er Trimestre", trimester: "1er Trimestre", period: "Sept - Déc", type: "trimester" },
+        { id: "3", name: "Séquence 3", trimester: "2ème Trimestre", period: "Jan - Fév", type: "sequence" },
+        { id: "4", name: "Séquence 4", trimester: "2ème Trimestre", period: "Fév - Mars", type: "sequence" },
+        { id: "T2", name: "2ème Trimestre", trimester: "2ème Trimestre", period: "Jan - Mars", type: "trimester" },
+        { id: "5", name: "Séquence 5", trimester: "3ème Trimestre", period: "Avr - Mai", type: "sequence" },
+        { id: "6", name: "Séquence 6", trimester: "3ème Trimestre", period: "Juin - Juil", type: "sequence" },
+        { id: "ANN", name: "Résultat Annuel", trimester: "Annuel", period: "Sept - Juil", type: "annual" },
     ];
 
     const classGrades = [
@@ -65,6 +70,48 @@ export default function AdminGradesPage() {
         return "text-red-600";
     };
 
+    // --- Mock Data for Global Export (6ème to Tle) ---
+    // In a real app, this would be fetched from an API
+    const generateMockStudents = () => {
+        const levels = ["6ème", "5ème", "4ème", "3ème", "2nde", "1ère", "Tle"];
+        const students: any[] = [];
+        let idCounter = 1;
+
+        levels.forEach(level => {
+            const numStudents = Math.floor(Math.random() * 5) + 3; // 3-7 students per level for demo
+            for (let i = 0; i < numStudents; i++) {
+                students.push({
+                    id: idCounter++,
+                    name: `Élève ${level} ${i + 1}`,
+                    matricule: `24G${1000 + idCounter}`,
+                    class: `${level} A`,
+                    average: Number((Math.random() * 10 + 8).toFixed(2)),
+                    rank: i + 1,
+                    status: "Nouveau",
+                    absences: Math.floor(Math.random() * 5),
+                    decision: Math.random() > 0.7 ? "Félicitations" : undefined
+                });
+            }
+        });
+        return students;
+    };
+
+    // Use state to hold the 'fetched' mock data, although static here
+    const allStudents = generateMockStudents();
+
+    // Mock grades for the report card modal
+    const mockGrades = [
+        { subject: "Mathématiques", grade: 14.5, coef: 4, teacher: "M. Talla" },
+        { subject: "Physique", grade: 12.0, coef: 3, teacher: "M. Kamdem" },
+        { subject: "Informatique", grade: 16.5, coef: 2, teacher: "Mme. Ngono" },
+        { subject: "Français", grade: 13.0, coef: 4, teacher: "M. Abessolo" },
+        { subject: "Anglais", grade: 11.5, coef: 3, teacher: "Mr. Smith" },
+        { subject: "Histoire", grade: 15.0, coef: 2, teacher: "M. Onana" },
+        { subject: "Géographie", grade: 14.0, coef: 2, teacher: "M. Onana" },
+        { subject: "ECM", grade: 16.0, coef: 1, teacher: "Mme. Minka" },
+    ];
+    // -------------------------------------------------
+
     return (
         <div className="space-y-6 pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -73,9 +120,13 @@ export default function AdminGradesPage() {
                     <p className="text-slate-500">Consultation et validation des notes par séquence</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex items-center gap-2 text-slate-700 border-slate-300 hover:bg-slate-50"
+                        onClick={() => setIsGlobalExportOpen(true)}
+                    >
                         <Download size={18} />
-                        Exporter Bulletins
+                        Exporter Bulletins (6ème - Tle)
                     </Button>
                 </div>
             </div>
@@ -105,8 +156,16 @@ export default function AdminGradesPage() {
                             className="h-10 px-4 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue min-w-64"
                         >
                             {sequences.map(seq => (
-                                <option key={seq.id} value={seq.id}>
-                                    {seq.name} - {seq.trimester} ({seq.period})
+                                <option key={seq.id} value={seq.id} className={cn(
+                                    seq.type === 'trimester' ? 'font-bold bg-slate-50' : '',
+                                    seq.type === 'annual' ? 'font-black bg-emerald-50 text-emerald-700' : ''
+                                )}>
+                                    {seq.type === 'trimester'
+                                        ? `🎓 ${seq.name} (Global)`
+                                        : seq.type === 'annual'
+                                            ? `🏆 ${seq.name}`
+                                            : `${seq.name} - ${seq.trimester} (${seq.period})`
+                                    }
                                 </option>
                             ))}
                         </select>
@@ -239,6 +298,16 @@ export default function AdminGradesPage() {
                     </CardHeader>
                 </Card>
             </div>
+
+            {/* Global Export Modal Trigger */}
+            {isGlobalExportOpen && (
+                <StudentReportCardModal
+                    students={allStudents}
+                    grades={mockGrades}
+                    onClose={() => setIsGlobalExportOpen(false)}
+                    sequenceInfo={{ name: "Séquence 1", trimester: "1er Trimestre", type: "sequence" }} // Default to seq 1
+                />
+            )}
         </div>
     );
 }

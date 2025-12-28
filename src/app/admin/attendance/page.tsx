@@ -62,12 +62,12 @@ export default function AdminAttendancePage() {
                     <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="h-10 px-4 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                        className="h-10 px-4 rounded-md border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-blue cursor-pointer"
                     >
-                        <option value="today">Aujourd'hui</option>
-                        <option value="week">Cette Semaine</option>
-                        <option value="month">Ce Mois</option>
-                        <option value="trimester">Ce Trimestre</option>
+                        <option value="today" className="text-slate-900">Aujourd'hui</option>
+                        <option value="week" className="text-slate-900">Cette Semaine</option>
+                        <option value="month" className="text-slate-900">Ce Mois</option>
+                        <option value="trimester" className="text-slate-900">Ce Trimestre</option>
                     </select>
                     <Button variant="outline" className="flex items-center gap-2">
                         <Download size={18} />

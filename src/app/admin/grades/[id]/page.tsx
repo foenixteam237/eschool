@@ -1,240 +1,321 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Download, CheckCircle, XCircle, Search, Printer } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useParams, useRouter } from "next/navigation";
+import {
+    Search,
+    Download,
+    FileText,
+    Filter,
+    MoreVertical,
+    TrendingUp,
+    Trophy,
+    AlertTriangle,
+    ArrowUpDown,
+    Printer,
+    CheckCircle2,
+    Settings2,
+    ArrowLeft
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import StudentReportCardModal from "@/components/admin/student-report-card-modal";
+import CouncilDecisionsModal from "@/components/admin/council-decisions-modal"; // Import new modal
+
+// Mock Data (simulating data fetched from ID)
+const classInfo = {
+    id: "6A",
+    name: "6ème A",
+    level: "6ème",
+    mainTeacher: "M. Tchaptchet",
+    studentsCount: 45,
+    average: 12.4,
+    successRate: 85,
+    topStudent: "Nguene Marie",
+    topScore: 18.5,
+    lastUpdated: "24 Oct 2024"
+};
+
+// Mock Global Grades (since we don't have individual grades yet)
+const mockGrades = [
+    { subject: "Mathématiques", grade: 14.5, coef: 4, teacher: "M. Talla" },
+    { subject: "Physique", grade: 12.0, coef: 3, teacher: "M. Kamdem" },
+    { subject: "Informatique", grade: 16.5, coef: 2, teacher: "Mme. Ngono" },
+    { subject: "Français", grade: 13.0, coef: 4, teacher: "M. Abessolo" },
+    { subject: "Anglais", grade: 11.5, coef: 3, teacher: "Mr. Smith" },
+    { subject: "Histoire", grade: 15.0, coef: 2, teacher: "M. Onana" },
+    { subject: "Géographie", grade: 14.0, coef: 2, teacher: "M. Onana" },
+    { subject: "ECM", grade: 16.0, coef: 1, teacher: "Mme. Minka" },
+];
+
+// Mock Students Data
+const initialStudents = Array.from({ length: 45 }).map((_, i) => ({
+    id: i + 1,
+    name: ["Nguene Marie", "Talla Jean", "Abessolo Pierre", "Minka Yvette", "Kamga Paul"][i % 5] + ` ${i + 1}`,
+    matricule: `24G${1000 + i}`,
+    class: "6ème A", // Added class
+    average: Number((Math.random() * 10 + 8).toFixed(2)),
+    rank: i + 1,
+    status: Math.random() > 0.8 ? "Redoublant" : "Nouveau",
+    absences: Math.floor(Math.random() * 5),
+    grades: {
+        math: Number((Math.random() * 10 + 8).toFixed(1)),
+        fr: Number((Math.random() * 10 + 8).toFixed(1)),
+        ang: Number((Math.random() * 10 + 8).toFixed(1)),
+        hist: Number((Math.random() * 10 + 8).toFixed(1)),
+    },
+    decision: undefined // Start undefined
+}));
 
 export default function AdminGradesDetailPage() {
-    const router = useRouter();
-    const params = useParams();
-    const searchParams = useSearchParams();
-    const classId = params.id;
-    const sequenceId = searchParams.get("sequence") || "1";
-
+    const params = useParams(); // Get class ID
+    const router = useRouter(); // For back navigation
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
+    const [students, setStudents] = useState<any[]>(initialStudents); // Use state for students to update decisions
 
-    const classInfo = {
-        "1": { name: "6ème A", level: "Sixième", average: 12.5, highest: 18.5, lowest: 6.2 },
-        "2": { name: "6ème B", level: "Sixième", average: 13.2, highest: 19.0, lowest: 7.5 },
-    }[classId as string] || { name: "Classe", level: "-", average: 0, highest: 0, lowest: 0 };
+    // Modal States
+    const [selectedStudent, setSelectedStudent] = useState<any>(null); // Single view
+    const [isCouncilModalOpen, setIsCouncilModalOpen] = useState(false); // Council config
+    const [isBatchPrintOpen, setIsBatchPrintOpen] = useState(false); // Batch print view
 
-    const sequenceInfo = {
-        "1": { name: "Séquence 1", trimester: "1er Trimestre" },
-        "2": { name: "Séquence 2", trimester: "1er Trimestre" },
-        "3": { name: "Séquence 3", trimester: "2ème Trimestre" },
-        "4": { name: "Séquence 4", trimester: "2ème Trimestre" },
-        "5": { name: "Séquence 5", trimester: "3ème Trimestre" },
-        "6": { name: "Séquence 6", trimester: "3ème Trimestre" },
-    }[sequenceId] || { name: "Séquence", trimester: "Trimestre" };
+    const sequenceId = "SEQ1"; // This would come from URL or context in real app
 
-    const students = [
-        { id: 1, name: "ABENA Carole", matricule: "2025-001", math: 14.5, physics: 12.0, french: 15.5, english: 13.0, average: 13.75, rank: 5, status: "validated" },
-        { id: 2, name: "BELLA Marie", matricule: "2025-002", math: 16.0, physics: 14.5, french: 17.0, english: 15.5, average: 15.75, rank: 2, status: "validated" },
-        { id: 3, name: "FOTSO Paul", matricule: "2025-003", math: 18.5, physics: 17.0, french: 18.0, english: 17.5, average: 17.75, rank: 1, status: "validated" },
-        { id: 4, name: "KAMGA Jean", matricule: "2025-004", math: 11.0, physics: 10.5, french: 12.0, english: 11.5, average: 11.25, rank: 8, status: "validated" },
-        { id: 5, name: "NGONO Anne", matricule: "2025-005", math: 15.5, physics: 14.0, french: 16.0, english: 14.5, average: 15.0, rank: 3, status: "validated" },
-        { id: 6, name: "MBALLA Oscar", matricule: "2025-006", math: 9.5, physics: 8.0, french: 10.0, english: 9.0, average: 9.125, rank: 12, status: "pending" },
-    ];
+    // Determine Sequence Info (Mock)
+    let sequenceInfo = { name: "Séquence 1", trimester: "1er Trimestre", type: "sequence" };
+    if (params.id === 'T1' || params.id === 'T2' || params.id === 'T3') {
+        sequenceInfo = { name: `${params.id.slice(1)}ème Trimestre`, trimester: `${params.id.slice(1)}ème Trimestre`, type: "trimester" };
+    } else if (params.id === 'ANN') {
+        sequenceInfo = { name: "Résultat Annuel", trimester: "Annuel", type: "annual" };
+    }
 
-    const subjects = ["Mathématiques", "Physique/Chimie", "Français", "Anglais"];
-
-    const filteredStudents = students.filter(s =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.matricule.includes(searchTerm)
-    );
-
-    const getGradeColor = (grade: number) => {
-        if (grade >= 16) return "text-emerald-600 bg-emerald-50";
-        if (grade >= 14) return "text-blue-600 bg-blue-50";
-        if (grade >= 12) return "text-cyan-600 bg-cyan-50";
-        if (grade >= 10) return "text-amber-600 bg-amber-50";
-        return "text-red-600 bg-red-50";
-    };
-
-    const getRankBadge = (rank: number) => {
-        if (rank === 1) return <span className="px-2 py-1 text-xs font-black rounded bg-yellow-100 text-yellow-800">🥇 1er</span>;
-        if (rank === 2) return <span className="px-2 py-1 text-xs font-black rounded bg-slate-200 text-slate-700">🥈 2ème</span>;
-        if (rank === 3) return <span className="px-2 py-1 text-xs font-black rounded bg-orange-100 text-orange-700">🥉 3ème</span>;
-        return <span className="px-2 py-1 text-xs font-bold rounded bg-slate-100 text-slate-600">{rank}ème</span>;
+    const handleCouncilSave = (updatedStudents: any[]) => {
+        setStudents(updatedStudents);
+        // In real app, you would PATCH this to backend
+        console.log("Updated decisions:", updatedStudents.filter(s => s.decision));
     };
 
     return (
-        <div className="space-y-6 pb-12">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-slate-500 border border-slate-200 bg-white">
-                    <ArrowLeft size={20} />
-                </Button>
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notes - {classInfo.name}</h1>
-                    <p className="text-slate-500">{sequenceInfo.name} • {sequenceInfo.trimester}</p>
+        <div className="space-y-6">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" onClick={() => router.back()} className="h-10 w-10 rounded-full border-zinc-200 hover:bg-zinc-100">
+                        <ArrowLeft size={18} className="text-zinc-600" />
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+                            {classInfo.name}
+                            <Badge variant="outline" className="text-zinc-500 border-zinc-300">
+                                {classInfo.studentsCount} Élèves
+                            </Badge>
+                        </h1>
+                        <p className="text-zinc-500 text-sm mt-1">
+                            Gestion des notes • {sequenceInfo.name} • PP: {classInfo.mainTeacher}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex gap-3">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 gap-2"
+                        onClick={() => setIsCouncilModalOpen(true)}
+                    >
+                        <Settings2 size={16} />
+                        Conseil de Classe
+                    </Button>
+                    <Button variant="outline" size="sm" className="bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 gap-2">
+                        <Download size={16} />
+                        Exporter Excel
+                    </Button>
+                    <Button
+                        size="sm"
+                        className="bg-primary-blue hover:bg-blue-600 text-white gap-2"
+                        onClick={() => setIsBatchPrintOpen(true)}
+                    >
+                        <Printer size={16} />
+                        Bulletins (Tout)
+                    </Button>
                 </div>
             </div>
 
-            {/* Stats */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-l-4 border-l-primary-blue">
-                    <CardContent className="p-4">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Moyenne Classe</p>
-                        <p className="text-3xl font-black text-primary-blue mt-1">{classInfo.average.toFixed(2)}</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-l-4 border-l-emerald-500">
-                    <CardContent className="p-4">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Meilleure Note</p>
-                        <p className="text-3xl font-black text-emerald-600 mt-1">{classInfo.highest}</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-l-4 border-l-red-500">
-                    <CardContent className="p-4">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Note la Plus Faible</p>
-                        <p className="text-3xl font-black text-red-600 mt-1">{classInfo.lowest}</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-l-4 border-l-amber-500">
-                    <CardContent className="p-4">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Taux de Réussite</p>
-                        <p className="text-3xl font-black text-amber-600 mt-1">85.7%</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Actions & Search */}
-            <Card className="border-none shadow-sm">
-                <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                            <Input
-                                placeholder="Rechercher un élève..."
-                                className="pl-10 bg-slate-50 border-slate-200"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" className="flex items-center gap-2">
-                                <Download size={18} />
-                                Exporter Excel
-                            </Button>
-                            <Button variant="outline" className="flex items-center gap-2">
-                                <Printer size={18} />
-                                Bulletins
-                            </Button>
+                <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-emerald-50 rounded-lg">
+                        <TrendingUp className="text-emerald-500" size={24} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-zinc-500">Moyenne Classe</div>
+                        <div className="text-xl font-bold text-zinc-900">{classInfo.average}/20</div>
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                        <Trophy className="text-blue-500" size={24} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-zinc-500">Meilleure Note</div>
+                        <div className="text-xl font-bold text-zinc-900">{classInfo.topScore}/20</div>
+                        <div className="text-xs text-zinc-500">{classInfo.topStudent}</div>
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-red-50 rounded-lg">
+                        <AlertTriangle className="text-red-500" size={24} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-zinc-500">À Risque (Moy &lt; 10)</div>
+                        <div className="text-xl font-bold text-zinc-900">
+                            {students.filter(s => s.average < 10).length} Élèves
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-amber-50 rounded-lg">
+                        <CheckCircle2 className="text-amber-500" size={24} />
+                    </div>
+                    <div>
+                        <div className="text-sm text-zinc-500">Taux Réussite</div>
+                        <div className="text-xl font-bold text-zinc-900">{classInfo.successRate}%</div>
+                    </div>
+                </div>
+            </div>
 
-            {/* Grades Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Notes par Élève</CardTitle>
-                    <CardDescription>Détail des notes pour {sequenceInfo.name}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="text-left p-3 text-xs font-bold text-slate-500 uppercase">Rang</th>
-                                    <th className="text-left p-3 text-xs font-bold text-slate-500 uppercase">Matricule</th>
-                                    <th className="text-left p-3 text-xs font-bold text-slate-500 uppercase">Nom Complet</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Math</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Physique</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Français</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Anglais</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Moyenne</th>
-                                    <th className="text-center p-3 text-xs font-bold text-slate-500 uppercase">Statut</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredStudents.map((student) => (
+            {/* Main Content: Student List */}
+            <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+                {/* Toolbar */}
+                <div className="p-4 border-b border-zinc-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <div className="relative w-full sm:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                        <Input
+                            placeholder="Rechercher un élève..."
+                            className="bg-zinc-50 border-zinc-200 pl-9 text-zinc-900 focus:border-primary-blue/50"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 gap-2">
+                            <Filter size={16} /> Filtrer
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-zinc-500 uppercase bg-zinc-50/50">
+                            <tr>
+                                <th className="px-6 py-4 font-medium">Rang</th>
+                                <th className="px-6 py-4 font-medium">Élèves</th>
+                                <th className="px-6 py-4 font-medium text-center">Maths</th>
+                                <th className="px-6 py-4 font-medium text-center">Français</th>
+                                <th className="px-6 py-4 font-medium text-center">Anglais</th>
+                                <th className="px-6 py-4 font-medium text-center">Hist-Géo</th>
+                                <th className="px-6 py-4 font-medium text-center cursor-pointer hover:text-black flex items-center justify-center gap-1">
+                                    Moyenne <ArrowUpDown size={12} />
+                                </th>
+                                <th className="px-6 py-4 font-medium text-center">Statut</th>
+                                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200">
+                            {students
+                                .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                .map((student) => (
                                     <tr
                                         key={student.id}
-                                        className="border-b border-slate-100 hover:bg-blue-50 transition-colors cursor-pointer"
-                                        onClick={() => setSelectedStudent(student.id)}
+                                        className="hover:bg-zinc-50 transition-colors group cursor-pointer"
+                                        onClick={() => setSelectedStudent(student)}
                                     >
-                                        <td className="p-3">
-                                            {getRankBadge(student.rank)}
+                                        <td className="px-6 py-4 font-medium text-zinc-500">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
+                                            ${student.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
+                                                    student.rank === 2 ? 'bg-zinc-200 text-zinc-600' :
+                                                        student.rank === 3 ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-500'
+                                                }`}
+                                            >
+                                                {student.rank}
+                                            </div>
                                         </td>
-                                        <td className="p-3 text-sm text-slate-500 font-medium">{student.matricule}</td>
-                                        <td className="p-3 text-sm font-bold text-slate-900">{student.name}</td>
-                                        <td className="p-3 text-center">
-                                            <span className={cn("px-2 py-1 text-sm font-bold rounded", getGradeColor(student.math))}>
-                                                {student.math}
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-zinc-900">{student.name}</div>
+                                            <div className="text-xs text-zinc-500">{student.matricule}</div>
+                                        </td>
+                                        {/* Subject Grades */}
+                                        <td className="px-6 py-4 text-center text-zinc-600">{student.grades.math}</td>
+                                        <td className="px-6 py-4 text-center text-zinc-600">{student.grades.fr}</td>
+                                        <td className="px-6 py-4 text-center text-zinc-600">{student.grades.ang}</td>
+                                        <td className="px-6 py-4 text-center text-zinc-600">{student.grades.hist}</td>
+
+                                        {/* Average */}
+                                        <td className="px-6 py-4 text-center">
+                                            <Badge variant="outline" className={`
+                                            ${student.average >= 10
+                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                                    : 'bg-red-50 text-red-600 border-red-200'}
+                                        `}>
+                                                {student.average}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`text-xs px-2 py-1 rounded-full ${student.status === "Nouveau" ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"
+                                                }`}>
+                                                {student.status}
                                             </span>
                                         </td>
-                                        <td className="p-3 text-center">
-                                            <span className={cn("px-2 py-1 text-sm font-bold rounded", getGradeColor(student.physics))}>
-                                                {student.physics}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center">
-                                            <span className={cn("px-2 py-1 text-sm font-bold rounded", getGradeColor(student.french))}>
-                                                {student.french}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center">
-                                            <span className={cn("px-2 py-1 text-sm font-bold rounded", getGradeColor(student.english))}>
-                                                {student.english}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center">
-                                            <span className={cn("px-3 py-1.5 text-base font-black rounded", getGradeColor(student.average))}>
-                                                {student.average.toFixed(2)}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center">
-                                            {student.status === "validated" ? (
-                                                <CheckCircle className="inline text-emerald-600" size={20} />
-                                            ) : (
-                                                <XCircle className="inline text-amber-600" size={20} />
-                                            )}
+                                        <td className="px-6 py-4 text-right">
+                                            <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <MoreVertical size={16} />
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}
-                            </tbody>
-                        </table>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination (Placeholder) */}
+                <div className="p-4 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-500">
+                    <div>Affichage 1 à {students.length} sur {students.length} élèves</div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled className="border-zinc-200 bg-transparent text-zinc-400">Précédent</Button>
+                        <Button variant="outline" size="sm" disabled className="border-zinc-200 bg-transparent text-zinc-400">Suivant</Button>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            {/* Student Report Card Modal */}
-            {selectedStudent !== null && (() => {
-                const student = students.find(s => s.id === selectedStudent);
-                if (!student) return null;
+            {/* Render Council Decisions Modal */}
+            {isCouncilModalOpen && (
+                <CouncilDecisionsModal
+                    students={students}
+                    onClose={() => setIsCouncilModalOpen(false)}
+                    onSave={handleCouncilSave}
+                />
+            )}
 
-                const studentGrades = [
-                    { subject: "Mathématiques", grade: student.math, coef: 4, teacher: "M. DUPONT" },
-                    { subject: "Physique/Chimie", grade: student.physics, coef: 3, teacher: "Mme MARTIN" },
-                    { subject: "Français", grade: student.french, coef: 4, teacher: "M. BERNARD" },
-                    { subject: "Anglais", grade: student.english, coef: 2, teacher: "Mme DUBOIS" },
-                    { subject: "SVT", grade: 13.5, coef: 2, teacher: "M. LAURENT" },
-                    { subject: "Histoire-Géo", grade: 14.0, coef: 2, teacher: "Mme PETIT" },
-                    { subject: "EPS", grade: 15.0, coef: 1, teacher: "M. MOREAU" },
-                ];
+            {/* Render Single Student Report Card (Preview) */}
+            {selectedStudent && (
+                <StudentReportCardModal
+                    student={selectedStudent}
+                    grades={mockGrades}
+                    onClose={() => setSelectedStudent(null)}
+                    sequenceInfo={sequenceInfo}
+                />
+            )}
 
-                return (
-                    <StudentReportCardModal
-                        student={{
-                            name: student.name,
-                            matricule: student.matricule,
-                            class: classInfo.name,
-                            average: classInfo.average,
-                            rank: student.rank
-                        }}
-                        grades={studentGrades}
-                        sequenceInfo={sequenceInfo}
-                        onClose={() => setSelectedStudent(null)}
-                    />
-                );
-            })()}
+            {/* Render Batch Print Report Card */}
+            {isBatchPrintOpen && (
+                <StudentReportCardModal
+                    students={students} // Pass ALL students
+                    grades={mockGrades}
+                    onClose={() => setIsBatchPrintOpen(false)}
+                    sequenceInfo={sequenceInfo}
+                />
+            )}
+
         </div>
     );
 }

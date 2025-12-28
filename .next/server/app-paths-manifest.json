@@ -1,8 +1,7 @@
 {
-  "/admin/teachers/page": "app/admin/teachers/page.js",
-  "/admin/messages/page": "app/admin/messages/page.js",
-  "/admin/attendance/absentees/page": "app/admin/attendance/absentees/page.js",
+  "/admin/academics/page": "app/admin/academics/page.js",
+  "/admin/academics/subjects/new/page": "app/admin/academics/subjects/new/page.js",
   "/admin/grades/page": "app/admin/grades/page.js",
-  "/admin/grades/[id]/page": "app/admin/grades/[id]/page.js",
-  "/admin/finance/page": "app/admin/finance/page.js"
+  "/admin/attendance/page": "app/admin/attendance/page.js",
+  "/teacher/classes/page": "app/teacher/classes/page.js"
 }
