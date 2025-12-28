@@ -1,0 +1,120 @@
+Voici une description claire et structurée de la **logique métier** (business logic) du système de gestion scolaire que nous avons défini.  
+Elle est organisée par rôle et par module principal, avec les règles, flux, contraintes et interactions entre entités.
+
+### Entités Principales (Modèle de Données de Base)
+- **Utilisateur** : id, email, mot de passe (hashé), rôle (ADMIN, ENSEIGNANT, PARENT, ELEVE), nom, prénom, photo
+- **Élève** : id, nom, prénom, date_naissance, genre, classe_id, parent_id (lien vers un ou deux parents), photo, matricule unique
+- **Parent** : id, nom, prénom, téléphone, email, élèves_enfants (liste d’ids élèves)
+- **Enseignant** : id, nom, prénom, matières_enseignées (liste), classes_assignées (liste)
+- **Classe** : id, nom (ex: 6ème A), niveau (6ème, 5ème…), année_scolaire, enseignant_principal_id, liste_élèves
+- **Matière** : id, nom (Maths, Français…), coefficient
+- **Cours** : id, classe_id, matière_id, enseignant_id, jour, heure_début, heure_fin, salle
+- **Note** : id, élève_id, matière_id, enseignant_id, valeur (/20), type (Devoir, Contrôle, Trimestre), date, commentaire
+- **Présence** : id, élève_id, cours_id ou date, statut (PRESENT, ABSENT, RETARD, JUSTIFIE), motif_justification
+- **Paiement** : id, élève_id, parent_id, montant, type (APEE, inscription, mensuel), date, statut (PAYE, EN_ATTENTE, PARTIEL), référence_transaction
+- **Message** : id, expéditeur_id, destinataire_id, contenu, date, lu
+- **Devoir** : id, matière_id, classe_id, enseignant_id, description, date_remise, fichier_joint
+- **Soumission_devoir** : id, devoir_id, élève_id, fichier_rendu, date_rendu, note, commentaire_enseignant
+
+### 1. Logique Authentification & Rôles
+- Chaque utilisateur a **un seul compte** avec un rôle principal.
+- Exception : un Parent peut être lié à plusieurs Élèves.
+- Un Enseignant peut avoir plusieurs matières/classes.
+- Connexion :
+  - Vérifier email + mot de passe.
+  - Après succès → rediriger vers le dashboard correspondant au rôle.
+  - Option : si un utilisateur a plusieurs rôles (rare), proposer un sélecteur.
+- Sécurité :
+  - Blocage après 5 tentatives échouées (30 min).
+  - Réinitialisation mot de passe par email avec token valable 1h.
+
+### 2. Logique Administrateur
+**Gestion Inscriptions/Admissions**
+- Création élève → générer matricule automatique (ex: ANNÉE-ECOLE-XXXX).
+- Vérifier unicité email/téléphone parent.
+- Statut élève : Candidat → Inscrit → Actif → Radié.
+- Paiement inscription obligatoire avant activation.
+
+**Gestion Finance**
+- Calcul solde : Montant dû = frais annuels + mensualités - paiements.
+- Frais configurables par niveau (ex: 6ème = 500 000 FCFA/an).
+- Mensualités : 10 ou 12 mois, avec dates d’échéance.
+- Paiement Mobile Money → mise à jour statut en temps réel (webhook ou polling).
+- Alerte automatique aux parents quand solde > 0 et échéance passée.
+
+**Classes & Emplois du Temps**
+- Un élève ne peut être que dans **une classe** par année.
+- Emploi du temps : pas de chevauchement pour un enseignant ou une salle.
+- Validation : max 8h/jour, pas de cours avant 7h ou après 18h.
+
+**Rapports**
+- Moyenne classe/matière : moyenne pondérée par coefficient.
+- Rang élève : calculé par moyenne générale trimestrielle.
+- Export PDF/Excel pour bulletins, listes de classe, etc.
+
+### 3. Logique Enseignant
+**Notes**
+- Un enseignant ne peut saisir des notes que dans ses matières/classes assignées.
+- Types de notes : Devoir (coeff 1), Contrôle (coeff 2), Composition (coeff 3).
+- Moyenne matière = (somme notes × coeff) / somme coeff.
+- Verrouillage : notes trimestrielles verrouillées après date limite fixée par admin.
+
+**Présence**
+- Une présence par séance de cours (pas par jour).
+- Si absent > 3 jours consécutifs sans justification → alerte admin/parent.
+- Justification : upload justificatif (PDF/image) par parent.
+
+**Cahier de texte**
+- Obligatoire : chaque enseignant doit renseigner au moins 80 % des séances.
+- Devoirs : date remise obligatoire, max 7 jours après assignation.
+
+### 4. Logique Parent
+**Suivi**
+- Accès uniquement aux données de ses enfants.
+- Notification push/email pour : nouvelle note < 10/20, absence non justifiée, échéance paiement.
+
+**Paiement**
+- Paiement partiel autorisé.
+- Reçu automatique par email après paiement validé.
+- Historique visible sur 3 ans.
+
+**Messagerie**
+- Parent peut écrire à : Admin, Enseignant principal, Enseignants de ses enfants.
+- Admin peut écrire à tous ou groupe (ex: tous parents de 6ème).
+
+### 5. Logique Élève
+**Accès restreint**
+- Voir uniquement ses propres données.
+- Pas de modification possible.
+- Soumission devoir : fichier max 10 Mo, formats autorisés (PDF, Word, Image).
+
+**Planning**
+- Affichage des cours + devoirs à rendre (triés par date).
+- Statut devoir : À faire (rouge), En cours (orange), Rendu (vert), Noté (bleu).
+
+### 6. Règles Globales & Automatisations
+- **Année scolaire** : configurable (ex: 01/09/2025 → 31/08/2026).
+- **Calculs automatiques** :
+  - Moyenne trimestrielle = moyenne pondérée des notes.
+  - Décision passage classe : moyenne générale ≥ 10/20 + max 3 redoublements.
+- **Notifications** :
+  - Email/SMS pour absences, notes basses, paiements en retard.
+  - Push sur mobile (si app).
+- **Historisation** : toutes les modifications (notes, paiements) loguées avec utilisateur/date.
+- **Export** : bulletins, listes, statistiques (PDF, Excel, CSV).
+
+### Flux Principaux (Exemples)
+1. **Inscription d’un élève**  
+   Parent → Admin valide candidature → Paiement inscription → Élève actif → Assigné à une classe.
+
+2. **Saisie note**  
+   Enseignant → sélection classe/matière → saisie notes → sauvegarde → calcul moyenne → notification parent si < 10.
+
+3. **Paiement**  
+   Parent voit solde → clique "Payer" → redirection Mobile Money → confirmation → mise à jour solde + reçu.
+
+4. **Absence**  
+   Enseignant marque absent → si non justifié après 48h → alerte parent → parent justifie → statut changé.
+
+Cette logique métier est robuste et couvre un système scolaire complet.  
+Si tu veux approfondir un module spécifique (ex. : calcul des moyennes avec coefficients, gestion des examens, ou intégration paiement réel), dis-le-moi !
