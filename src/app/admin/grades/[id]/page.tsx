@@ -15,7 +15,8 @@ import {
     Printer,
     CheckCircle2,
     Settings2,
-    ArrowLeft
+    ArrowLeft,
+    Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

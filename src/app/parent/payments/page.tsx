@@ -1,15 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { CreditCard, Smartphone, CheckCircle, Clock, ArrowRight, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { logTransaction } from "@/lib/finance";
 
 export default function ParentPaymentsPage() {
-    const history = [
+    const [history, setHistory] = useState([
         { id: "TX-9021", date: "15 Nov 2025", child: "Kamga Jean", type: "Mensualité Nov", amount: "35,000 FCFA", status: "Réussi" },
         { id: "TX-8842", date: "02 Oct 2025", child: "Kamga Marie", type: "Inscription", amount: "120,000 FCFA", status: "Réussi" },
-    ];
+    ]);
+
+    const handlePayment = async () => {
+        const paymentDetails = {
+            id: `TX-${Math.floor(Math.random() * 10000)}`,
+            date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
+            child: "Kamga Jean",
+            type: "Frais APEE",
+            amount: "25,000 FCFA",
+            status: "Réussi"
+        };
+        await logTransaction(paymentDetails);
+        setHistory([paymentDetails, ...history]);
+    };
 
     return (
         <div className="space-y-8">
@@ -72,7 +87,7 @@ export default function ParentPaymentsPage() {
                                 </div>
                             </div>
 
-                            <Button className="w-full h-12 text-lg font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
+                            <Button onClick={handlePayment} className="w-full h-12 text-lg font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
                                 Procéder au Paiement <ArrowRight className="ml-2" size={20} />
                             </Button>
                         </div>

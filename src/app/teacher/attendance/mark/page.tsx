@@ -6,6 +6,7 @@ import { Check, X, Clock, Save, ArrowLeft, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { createAbsenceNotification } from "@/lib/attendance";
 
 export default function TeacherAttendanceMarkPage() {
     const router = useRouter();
@@ -28,6 +29,9 @@ export default function TeacherAttendanceMarkPage() {
 
     const toggleStatus = (id: string, status: string) => {
         if (isReadOnly) return;
+        if (status === "ABSENT") {
+            createAbsenceNotification(id);
+        }
         setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s));
     };
 

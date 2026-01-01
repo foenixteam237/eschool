@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 
 export default function ParentDashboard() {
     const children = [
-        { name: "Kamga Jean", class: "3ème B", status: "À l'école", lastMark: "14/20 (Maths)", finance: "À jour" },
-        { name: "Kamga Marie", class: "6ème A", status: "À l'école", lastMark: "16.5/20 (Anglais)", finance: "Solde: 25.000 FCFA" },
+        { name: "Kamga Jean", class: "3ème B", status: "À l'école", lastMark: "14/20 (Maths)", finance: "À jour", average: 14.5, classAverage: 12.0, lastPayment: "35,000 FCFA" },
+        { name: "Kamga Marie", class: "6ème A", status: "À l'école", lastMark: "16.5/20 (Anglais)", finance: "Solde: 25.000 FCFA", average: 16.5, classAverage: 14.0, lastPayment: "120,000 FCFA" },
     ];
 
     return (
@@ -58,6 +58,40 @@ export default function ParentDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TrendingUp className="text-primary-blue" /> Vue consolidée "Temps Réel"
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {children.map((child, i) => (
+                                <div key={i} className="p-4 rounded-lg border border-slate-100">
+                                    <h4 className="font-bold text-slate-800">{child.name}</h4>
+                                    <div className="mt-2 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-slate-500">Moyenne actuelle</p>
+                                            <p className="text-sm font-bold">{child.average}/20</p>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-slate-500">Moyenne de classe</p>
+                                            <p className="text-sm font-bold">{child.classAverage}/20</p>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-slate-500">Dernier paiement</p>
+                                            <p className="text-sm font-bold">{child.lastPayment}</p>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-slate-500">État de présence</p>
+                                            <p className="text-sm font-bold">{child.status}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">

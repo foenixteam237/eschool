@@ -1,7 +1,1 @@
-{
-  "/admin/academics/page": "app/admin/academics/page.js",
-  "/admin/academics/subjects/new/page": "app/admin/academics/subjects/new/page.js",
-  "/admin/grades/page": "app/admin/grades/page.js",
-  "/admin/attendance/page": "app/admin/attendance/page.js",
-  "/teacher/classes/page": "app/teacher/classes/page.js"
-}
+{}
