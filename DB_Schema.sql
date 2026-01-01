@@ -105,6 +105,7 @@ CREATE TABLE notes (
     annee_scolaire_id UUID REFERENCES annees_scolaires(id),
     date DATE NOT NULL,
     commentaire TEXT,
+    verrouille BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -192,6 +193,36 @@ CREATE TABLE emprunts (
     date_retour_prevue DATE NOT NULL,
     date_retour_reelle DATE,
     statut TEXT CHECK (statut IN ('EMPRUNTE', 'RETOURNE', 'EN_RETARD')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Journal de Caisse pour la traçabilité financière
+CREATE TABLE journal_caisse (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id TEXT UNIQUE NOT NULL,
+    eleve_id UUID REFERENCES eleves(id),
+    parent_id UUID REFERENCES utilisateurs(id),
+    montant NUMERIC(12,2) NOT NULL,
+    type_paiement TEXT,
+    date_heure_transaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table pour les notifications (absences, etc.)
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    destinataire_id UUID REFERENCES utilisateurs(id) NOT NULL,
+    message TEXT NOT NULL,
+    statut TEXT CHECK (statut IN ('NON_LU', 'LU', 'ARCHIVE')) DEFAULT 'NON_LU',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table pour la signature numérique des documents officiels
+CREATE TABLE hash_document (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleve_id UUID REFERENCES eleves(id) ON DELETE CASCADE,
+    type_document TEXT NOT NULL,
+    hash_valeur TEXT UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
