@@ -1,7 +1,7 @@
 {
-  "/admin/academics/page": "app/admin/academics/page.js",
-  "/admin/academics/subjects/new/page": "app/admin/academics/subjects/new/page.js",
-  "/admin/grades/page": "app/admin/grades/page.js",
-  "/admin/attendance/page": "app/admin/attendance/page.js",
-  "/teacher/classes/page": "app/teacher/classes/page.js"
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js",
+  "/admin/teachers/page": "app/admin/teachers/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js"
 }
