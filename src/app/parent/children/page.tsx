@@ -2,8 +2,10 @@
 
 import { Users, BookOpen, GraduationCap, Clock, ChevronRight, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ResultsModal } from "@/components/shared/results-modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export default function ParentChildrenTrackingPage() {
     const children = [
@@ -26,6 +28,8 @@ export default function ParentChildrenTrackingPage() {
             teachers: ["M. DUPONT", "Mme. SMITH"]
         },
     ];
+
+    const [selectedStudent, setSelectedStudent] = useState<{ name: string; class: string } | null>(null);
 
     return (
         <div className="space-y-8">
@@ -60,7 +64,14 @@ export default function ParentChildrenTrackingPage() {
                                     <CardTitle>Dernières Notes & Évaluations</CardTitle>
                                     <CardDescription>Visualisez les progrès récents par matière.</CardDescription>
                                 </div>
-                                <Button variant="outline" size="sm">Bulletin Complet</Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedStudent({ name: child.name, class: child.class })}
+                                >
+                                    Bulletin Complet
+                                </Button>
+                                {/* <Button variant="outline" size="sm">Bulletin Complet</Button> */}
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
@@ -85,6 +96,15 @@ export default function ParentChildrenTrackingPage() {
                     </div>
                 ))}
             </div>
+
+            {selectedStudent && (
+                <ResultsModal
+                    isOpen={!!selectedStudent}
+                    onClose={() => setSelectedStudent(null)}
+                    studentName={selectedStudent.name}
+                    studentClass={selectedStudent.class}
+                />
+            )}
         </div>
     );
 }

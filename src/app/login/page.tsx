@@ -2,38 +2,44 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GraduationCap, LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { GraduationCap, LogIn, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { UserRole } from "@/types";
 
 export default function LoginPage() {
     const router = useRouter();
-    const login = useAuthStore((state) => state.login);
-    const [loading, setLoading] = useState(false);
+    const { login, isLoading, error, setError } = useAuthStore();
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState<UserRole>("ADMIN");
+    const [password, setPassword] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setError(null);
 
-        // Simulate API call
-        setTimeout(() => {
-            login(email, role);
-            setLoading(false);
-
-            const rolePaths: Record<UserRole, string> = {
+        try {
+            console.log('📝 Submitting login form with email:', email);
+            const response = await login({ email, password });
+            
+            console.log('🎉 Login response received in page component:');
+            console.log('Response:', response);
+            
+            // Redirect based on user role
+            const rolePaths: Record<string, string> = {
                 ADMIN: "admin",
                 ENSEIGNANT: "teacher",
                 PARENT: "parent",
                 ELEVE: "eleve"
             };
 
-            router.push(`/${rolePaths[role]}/dashboard`);
-        }, 1500);
+            const path = rolePaths[response.data.user.role] || "dashboard";
+            console.log(`🚀 Redirecting to /${path}/dashboard`);
+            router.push(`/${path}/dashboard`);
+        } catch (err) {
+            // Error is already set in the store
+            console.log("❌ Login error in page component:", err);
+        }
     };
 
     return (
@@ -50,6 +56,14 @@ export default function LoginPage() {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Error Alert */}
+                        {error && (
+                            <div className="p-3 rounded-md bg-red-50 border border-red-200 flex items-start gap-3">
+                                <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+                                <p className="text-sm text-red-800">{error}</p>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700">Email</label>
                             <div className="relative">
@@ -61,6 +75,7 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
                         </div>
@@ -73,32 +88,30 @@ export default function LoginPage() {
                                     type="password"
                                     placeholder="••••••••"
                                     className="pl-10"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Rôle (Simulation)</label>
-                            <select
-                                className="w-full h-10 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-primary-blue outline-none"
-                                value={role}
-                                onChange={(e) => setRole(e.target.value as UserRole)}
-                            >
-                                <option value="ADMIN">Administrateur</option>
-                                <option value="ENSEIGNANT">Enseignant</option>
-                                <option value="PARENT">Parent</option>
-                                <option value="ELEVE">Élève</option>
-                            </select>
                         </div>
 
                         <Button
                             type="submit"
                             className="w-full h-11 text-base font-bold shadow-md hover:shadow-lg transition-all"
-                            disabled={loading}
+                            disabled={isLoading}
                         >
-                            {loading ? <Loader2 className="animate-spin mr-2" /> : <LogIn className="mr-2" size={18} />}
-                            Se connecter
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="animate-spin mr-2" size={18} />
+                                    Connexion en cours...
+                                </>
+                            ) : (
+                                <>
+                                    <LogIn className="mr-2" size={18} />
+                                    Se connecter
+                                </>
+                            )}
                         </Button>
 
                         <p className="text-center text-sm text-slate-500">

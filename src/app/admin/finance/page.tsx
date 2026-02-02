@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-    CreditCard,
     TrendingUp,
     ArrowUpRight,
     ArrowDownRight,
@@ -12,7 +11,6 @@ import {
     AlertCircle,
     Clock,
     Search,
-    Filter,
     Trash2,
     Edit,
     Wallet,
@@ -25,6 +23,25 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { DeleteModal } from "@/components/shared/delete-modal";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 export default function AdminFinancePage() {
     const [transactions, setTransactions] = useState([
@@ -130,32 +147,118 @@ export default function AdminFinancePage() {
                 </Card>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="border-none shadow-md">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Aperçu Mensuel</CardTitle>
+                        <CardDescription>Comparaison Entrées / Sorties</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="h-[300px] w-full flex items-center justify-center">
+                            <Bar
+                                data={{
+                                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                                    datasets: [
+                                        {
+                                            label: 'Entrées',
+                                            data: [650000, 590000, 800000, 810000, 560000, 550000],
+                                            backgroundColor: 'rgba(16, 185, 129, 0.8)', // Emerald-500
+                                            borderRadius: 4,
+                                        },
+                                        {
+                                            label: 'Sorties',
+                                            data: [280000, 480000, 400000, 190000, 860000, 270000],
+                                            backgroundColor: 'rgba(244, 63, 94, 0.8)', // Rose-500
+                                            borderRadius: 4,
+                                        }
+                                    ]
+                                }}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'top' as const,
+                                            align: 'end' as const,
+                                            labels: {
+                                                usePointStyle: true,
+                                                boxWidth: 8,
+                                                font: { size: 10, weight: 'bold' }
+                                            }
+                                        },
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            grid: { color: '#f1f5f9' },
+                                            ticks: { font: { size: 10 } }
+                                        },
+                                        x: {
+                                            grid: { display: false },
+                                            ticks: { font: { size: 10 } }
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-md">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Répartition des Dépenses</CardTitle>
+                        <CardDescription>Par catégorie sur ce mois</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {[
+                                { label: "Salaires", value: 65, color: "bg-blue-500" },
+                                { label: "Maintenance", value: 20, color: "bg-rose-500" },
+                                { label: "Fournitures", value: 10, color: "bg-amber-500" },
+                                { label: "Autres", value: 5, color: "bg-slate-400" },
+                            ].map((item) => (
+                                <div key={item.label} className="space-y-1">
+                                    <div className="flex justify-between text-xs font-bold text-slate-700">
+                                        <span>{item.label}</span>
+                                        <span>{item.value}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div className={cn("h-full rounded-full", item.color)} style={{ width: `${item.value}%` }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <Card className="border-none shadow-sm overflow-hidden">
                 <CardHeader className="bg-slate-50/50 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 py-4">
                     <div>
                         <CardTitle className="text-xl">Historique des Flux</CardTitle>
                         <CardDescription className="text-xs">Détails de toutes les entrées et sorties d'argent.</CardDescription>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+                        <div className="relative w-full sm:w-64">
                             <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
                             <Input
                                 placeholder="Rechercher..."
-                                className="pl-9 h-10 w-64 bg-white border-slate-200 text-sm focus:ring-primary-blue"
+                                className="pl-9 h-10 w-full bg-white border-slate-200 text-sm focus:ring-primary-blue"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm w-full sm:w-auto overflow-x-auto">
                             {(["all", "income", "expense"] as const).map((f) => (
                                 <button
                                     key={f}
                                     onClick={() => setFilter(f)}
                                     className={cn(
-                                        "px-4 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all",
+                                        "px-4 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all whitespace-nowrap flex-1 sm:flex-none",
                                         filter === f
                                             ? "bg-slate-900 text-white shadow-md shadow-slate-200"
                                             : "text-slate-400 hover:text-slate-600"
+
                                     )}
                                 >
                                     {f === "all" ? "Tous" : f === "income" ? "Entrées" : "Sorties"}
@@ -264,4 +367,3 @@ export default function AdminFinancePage() {
         </div>
     );
 }
-

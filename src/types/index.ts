@@ -3,13 +3,15 @@ export type UserRole = "ADMIN" | "ENSEIGNANT" | "PARENT" | "ELEVE";
 export interface User {
     id: string;
     email: string;
-    nom: string;
-    prenom: string;
+    firstName: string;
+    lastName: string;
     role: UserRole;
     telephone?: string;
     adresse?: string;
     photoUrl?: string;
     estActif: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Student extends User {
@@ -17,6 +19,19 @@ export interface Student extends User {
     dateNaissance?: string;
     genre?: "M" | "F" | "Autre";
     classeId?: string;
+    parentId?: string;
+}
+
+export interface Teacher extends User {
+    specialite?: string;
+    experience?: number;
+    classes?: string[];
+    matieres?: string[];
+}
+
+export interface Parent extends User {
+    enfants?: string[];
+    profession?: string;
 }
 
 export interface Class {
@@ -25,6 +40,10 @@ export interface Class {
     niveau: string;
     anneeScolaireId: string;
     enseignantPrincipalId?: string;
+    description?: string;
+    capacity?: number;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Subject {
@@ -32,6 +51,8 @@ export interface Subject {
     nom: string;
     coefficient: number;
     description?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Grade {
@@ -44,6 +65,8 @@ export interface Grade {
     trimestre: 1 | 2 | 3;
     date: string;
     commentaire?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Payment {
@@ -55,4 +78,119 @@ export interface Payment {
     datePaiement: string;
     statut: "PAYE" | "EN_ATTENTE" | "PARTIEL" | "ANNULE";
     referenceTransaction?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Attendance {
+    id: string;
+    eleveId: string;
+    coursId: string;
+    date: string;
+    statut: "PRESENT" | "ABSENT" | "RETARD" | "JUSTIFIE";
+    motif?: string;
+    justificatifUrl?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Lesson {
+    id: string;
+    classeId: string;
+    matiereId: string;
+    enseignantId: string;
+    jour: string;
+    heureDebut: string;
+    heureFin: string;
+    salle: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Message {
+    id: string;
+    expediteurId: string;
+    destinataireId: string;
+    contenu: string;
+    date: string;
+    lu: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Assignment {
+    id: string;
+    matiereId: string;
+    classeId: string;
+    enseignantId: string;
+    titre: string;
+    description: string;
+    dateRemise: string;
+    fichierJoint?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface AssignmentSubmission {
+    id: string;
+    devoirId: string;
+    eleveId: string;
+    fichierRendu?: string;
+    dateRemise: string;
+    note?: number;
+    commentaireEnseignant?: string;
+    statut: "SOUMIS" | "EVALUE" | "RETARD";
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface SchoolYear {
+    id: string;
+    annee: string;
+    dateDebut: string;
+    dateFin: string;
+    actif: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface AcademicRecord {
+    id: string;
+    eleveId: string;
+    anneeScolaireId: string;
+    moyenneGenerale: number;
+    rang: number;
+    statut: "ADMIS" | "REDOUBLE" | "RENVOY";
+    observation?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+/* API Response Types */
+
+export interface ApiSuccessResponse<T> {
+    success: true;
+    data: T;
+    message?: string;
+}
+
+export interface ApiErrorResponse {
+    success: false;
+    error: {
+        message: string;
+        code?: string;
+        details?: Record<string, unknown>;
+    };
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+/* Pagination */
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
 }

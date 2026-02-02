@@ -32,28 +32,35 @@ export function MobileMenu({ role }: MobileMenuProps) {
         admin: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
             { icon: Users, label: "Élèves", href: "/admin/students" },
+            { icon: GraduationCap, label: "Enseignants", href: "/admin/teachers" },
             { icon: BookOpen, label: "Classes & Matières", href: "/admin/academics" },
+            { icon: Users, label: "Assiduité", href: "/admin/attendance" },
+            { icon: GraduationCap, label: "Notes", href: "/admin/grades" },
             { icon: CreditCard, label: "Finance", href: "/admin/finance" },
             { icon: MessageSquare, label: "Messagerie", href: "/admin/messages" },
-            { icon: Settings, label: "Configuration", href: "/admin/settings" },
+            { icon: Settings, label: "Paramètres", href: "/admin/settings" },
         ],
         teacher: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/teacher/dashboard" },
-            { icon: BookOpen, label: "Mes Classes", href: "/teacher/classes" },
+            { icon: Users, label: "Appel / Présences", href: "/teacher/attendance" },
             { icon: GraduationCap, label: "Notes", href: "/teacher/grades" },
+            { icon: BookOpen, label: "Cahier de Texte", href: "/teacher/lesson-log" },
             { icon: MessageSquare, label: "Messagerie", href: "/teacher/messages" },
+            { icon: Settings, label: "Mon Profil", href: "/teacher/profile" },
         ],
         parent: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/parent/dashboard" },
             { icon: Users, label: "Mes Enfants", href: "/parent/children" },
             { icon: CreditCard, label: "Paiements", href: "/parent/payments" },
             { icon: MessageSquare, label: "Messagerie", href: "/parent/messages" },
+            { icon: Settings, label: "Mon Profil", href: "/parent/profile" },
         ],
         eleve: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/eleve/dashboard" },
             { icon: BookOpen, label: "Mes Cours", href: "/eleve/courses" },
             { icon: GraduationCap, label: "Mes Résultats", href: "/eleve/results" },
             { icon: MessageSquare, label: "Messagerie", href: "/eleve/messages" },
+            { icon: Settings, label: "Mon Profil", href: "/eleve/profile" },
         ],
     };
 

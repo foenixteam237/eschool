@@ -19,10 +19,10 @@ export default function ParentDashboard() {
     ];
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Bonjour, Mme Bella</h1>
-                <p className="text-slate-500">Suivez la scolarité de vos enfants en temps réel.</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Bonjour, Mme Bella</h1>
+                <p className="text-slate-500 text-sm md:text-base">Suivez la scolarité de vos enfants en temps réel.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
@@ -57,7 +57,7 @@ export default function ParentDashboard() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">

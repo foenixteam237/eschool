@@ -30,16 +30,16 @@ export default function StudentDashboard() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Bonjour, Marie !</h1>
-                    <p className="text-slate-500">Bonne journée d'apprentissage. Tu as 3 cours aujourd'hui.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Bonjour, Marie !</h1>
+                    <p className="text-slate-500 text-sm md:text-base">Bonne journée d'apprentissage. Tu as 3 cours aujourd'hui.</p>
                 </div>
-                <div className="bg-primary-blue text-white px-4 py-2 rounded-lg flex items-center gap-3 shadow-md shadow-blue-100">
+                <div className="bg-primary-blue text-white px-4 py-2 rounded-lg flex items-center gap-3 shadow-md shadow-blue-100 w-fit">
                     <Calendar size={20} />
                     <span className="font-bold">Mardi, 23 Décembre</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     <Card>
                         <CardHeader>
@@ -50,11 +50,11 @@ export default function StudentDashboard() {
                         <CardContent>
                             <div className="space-y-4">
                                 {schedule.map((slot, i) => (
-                                    <div key={i} className="flex items-center gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:bg-blue-50 hover:border-blue-100 transition-all">
-                                        <div className="text-sm font-bold text-slate-400 w-24">{slot.time}</div>
-                                        <div className="flex-1">
-                                            <p className="font-extrabold text-slate-800">{slot.subject}</p>
-                                            <p className="text-xs text-slate-500">{slot.teacher} • {slot.room}</p>
+                                    <div key={i} className="flex items-center gap-4 md:gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:bg-blue-50 hover:border-blue-100 transition-all">
+                                        <div className="text-sm font-bold text-slate-400 w-20 md:w-24 shrink-0">{slot.time}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-extrabold text-slate-800 truncate">{slot.subject}</p>
+                                            <p className="text-xs text-slate-500 truncate">{slot.teacher} • {slot.room}</p>
                                         </div>
                                         <Button variant="ghost" size="icon" className="group-hover:text-primary-blue">
                                             <ArrowRight size={18} />

@@ -100,11 +100,11 @@ export default function TeacherLessonLogPage() {
             <Card className="border-none shadow-sm">
                 <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                             <Input
                                 placeholder="Rechercher par titre ou contenu..."
-                                className="pl-10 bg-slate-50 border-slate-200"
+                                className="pl-10 bg-slate-50 border-slate-200 w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -112,7 +112,7 @@ export default function TeacherLessonLogPage() {
                         <select
                             value={selectedClass}
                             onChange={(e) => setSelectedClass(e.target.value)}
-                            className="h-10 px-4 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue min-w-48"
+                            className="h-10 px-4 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue w-full md:w-auto min-w-48"
                         >
                             {classes.map(c => (
                                 <option key={c.id} value={c.id}>{c.name}</option>

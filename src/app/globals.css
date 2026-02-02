@@ -1,25 +1,126 @@
 @import "tailwindcss";
 
 @theme {
+  /* Primary Colors */
   --color-primary-blue: #1E40AF;
+  --color-primary-blue-light: #3B82F6;
+  --color-primary-blue-dark: #1E3A8A;
+  /* SuperAdmin Palette */
+  --color-superadmin-primary: #4F46E5; /* violet royal */
+  --color-superadmin-accent: #6D28D9; /* deep purple */
+  
+  /* Status Colors */
   --color-success-green: #10B981;
-  --color-gray-soft: #F1F5F9;
+  --color-success-green-light: #6EE7B7;
   --color-alert-orange: #F59E0B;
+  --color-error-red: #EF4444;
+  --color-warning-yellow: #FBBF24;
+  
+  /* Neutral Colors */
+  --color-gray-soft: #F1F5F9;
+  --color-gray-lighter: #F8FAFC;
+  --color-gray-light: #E2E8F0;
+  --color-gray-medium: #CBD5E1;
+  --color-gray-dark: #64748B;
+  
+  /* Info and other states */
+  --color-info-cyan: #06B6D4;
+  --color-pending-purple: #A855F7;
 }
 
 :root {
+  /* Light mode */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --card-background: oklch(1 0 0);
+  --border-color: oklch(0.945 0 0);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
+    --card-background: oklch(0.2 0 0);
+    --border-color: oklch(0.3 0 0);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-feature-settings: "rlig" 1 "calt" 1;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-dark);
+}
+
+/* Selection */
+::selection {
+  background: var(--primary-blue-light);
+  color: white;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

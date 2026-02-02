@@ -4,6 +4,7 @@ import { Bell, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "@/components/shared/mobile-menu";
+import { UserMenu } from "@/components/shared/user-menu";
 
 interface NavbarProps {
     title: string;
@@ -41,9 +42,7 @@ export function Navbar({ title, userName, userRole, role }: NavbarProps) {
                         <p className="text-sm font-bold text-slate-800 leading-tight">{userName}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{userRole}</p>
                     </div>
-                    <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 p-0 overflow-hidden border border-slate-100 transition-all hover:scale-105">
-                        <User size={20} className="text-slate-400" />
-                    </Button>
+                    <UserMenu userName={userName} userRole={userRole} />
                 </div>
             </div>
         </header>
