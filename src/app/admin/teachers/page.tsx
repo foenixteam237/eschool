@@ -1,5 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useState } from "react";
 import {
     GraduationCap,
@@ -25,7 +29,7 @@ import { DeleteModal } from "@/components/shared/delete-modal";
 
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function AdminTeachersPage() {
+function AdminTeachersPageInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const selectedSubject = searchParams.get("subject");
@@ -243,5 +247,13 @@ export default function AdminTeachersPage() {
                 itemName={selectedTeacher?.name}
             />
         </div>
+    );
+}
+
+export default function AdminTeachersPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <AdminTeachersPageInner />
+        </Suspense>
     );
 }

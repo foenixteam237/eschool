@@ -57,7 +57,7 @@ export function StudentResultsView({ studentName, studentClass, hideHeader = fal
 
             // Calculate statistics
             if (result.length > 0) {
-                const values = result.map(g => g.value);
+                const values = result.map(g => g.valeur);
                 const sum = values.reduce((a, b) => a + b, 0);
                 const average = sum / values.length;
                 
@@ -101,7 +101,7 @@ export function StudentResultsView({ studentName, studentClass, hideHeader = fal
 
     // Group grades by subject
     const gradesBySubject = grades.reduce((acc: Record<string, Grade[]>, grade) => {
-        const subject = grade.subjectId || 'Autre';
+        const subject = grade.matiereId || 'Autre';
         if (!acc[subject]) acc[subject] = [];
         acc[subject].push(grade);
         return acc;
@@ -179,11 +179,11 @@ export function StudentResultsView({ studentName, studentClass, hideHeader = fal
                                         {subjectGrades.map((grade) => (
                                             <div key={grade.id} className="py-3 flex items-center justify-between">
                                                 <div>
-                                                    <p className="font-medium text-slate-900">{grade.gradeType || 'Note'}</p>
+                                                    <p className="font-medium text-slate-900">{grade.typeNote || 'Note'}</p>
                                                     <p className="text-sm text-slate-500">{new Date(grade.date).toLocaleDateString('fr-FR')}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-2xl font-bold text-blue-600">{grade.value}</p>
+                                                    <p className="text-2xl font-bold text-blue-600">{grade.valeur}</p>
                                                 </div>
                                             </div>
                                         ))}

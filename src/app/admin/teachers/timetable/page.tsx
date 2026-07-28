@@ -1,5 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import {
     ChevronLeft,
@@ -15,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export default function TeacherTimetablePage() {
+function TeacherTimetablePageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const teacherId = searchParams.get("id");
@@ -151,5 +155,13 @@ export default function TeacherTimetablePage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function TeacherTimetablePage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <TeacherTimetablePageInner />
+        </Suspense>
     );
 }
