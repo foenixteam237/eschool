@@ -1,5 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Check, X, Clock, Save, ArrowLeft, Users } from "lucide-react";
@@ -7,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function TeacherAttendanceMarkPage() {
+function TeacherAttendanceMarkPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const classId = searchParams.get("classId") || "1";
@@ -137,5 +141,13 @@ export default function TeacherAttendanceMarkPage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function TeacherAttendanceMarkPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <TeacherAttendanceMarkPageInner />
+        </Suspense>
     );
 }

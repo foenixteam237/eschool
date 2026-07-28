@@ -1,5 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -24,7 +28,7 @@ import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { DeleteModal } from "@/components/shared/delete-modal";
 
-export default function NewStudentPage() {
+function NewStudentPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isEdit = searchParams.get("edit");
@@ -310,5 +314,13 @@ export default function NewStudentPage() {
                 itemName={`${formData.nom} ${formData.prenom}`}
             />
         </div>
+    );
+}
+
+export default function NewStudentPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <NewStudentPageInner />
+        </Suspense>
     );
 }

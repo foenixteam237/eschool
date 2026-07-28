@@ -1,12 +1,16 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FileText, Settings, ArrowLeft, BarChart3, Users, Printer, Calendar, CheckCircle2, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function TeacherGradesDashboard() {
+function TeacherGradesDashboardInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const classId = searchParams.get("classId") || "1";
@@ -239,5 +243,13 @@ export default function TeacherGradesDashboard() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function TeacherGradesDashboard() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <TeacherGradesDashboardInner />
+        </Suspense>
     );
 }

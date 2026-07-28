@@ -92,9 +92,7 @@ export default function AdminStudentsPage() {
             toast.error(message);
         }
     };
-            setSelectedStudent(null);
-        }
-    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -192,9 +190,9 @@ export default function AdminStudentsPage() {
                                             <td className="py-4 pr-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-blue-100 text-primary-blue flex items-center justify-center font-bold text-xs">
-                                                        {student.nom?.charAt(0) || 'S'}
+                                                        {student.lastName?.charAt(0) || 'S'}
                                                     </div>
-                                                    <span className="font-bold text-slate-800">{student.nom} {student.prenom}</span>
+                                                    <span className="font-bold text-slate-800">{student.lastName} {student.firstName}</span>
                                                 </div>
                                             </td>
                                             <td className="py-4 pr-4 text-slate-500 text-sm">{student.email}</td>
@@ -209,7 +207,7 @@ export default function AdminStudentsPage() {
                                                         variant="ghost" 
                                                         size="icon" 
                                                         className="h-8 w-8 text-slate-400 hover:text-red-600"
-                                                        onClick={() => handleDeleteClick(student.id, `${student.nom} ${student.prenom}`)}
+                                                        onClick={() => handleDeleteClick(student.id, `${student.lastName} ${student.firstName}`)}
                                                     >
                                                         <Trash2 size={16} />
                                                     </Button>

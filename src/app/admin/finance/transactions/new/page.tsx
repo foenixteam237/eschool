@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     ChevronLeft,
@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DeleteModal } from "@/components/shared/delete-modal";
 
-export default function NewTransactionPage() {
+function NewTransactionForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isEdit = searchParams.get("edit");
@@ -254,5 +254,13 @@ export default function NewTransactionPage() {
                 itemName={formData.label}
             />
         </div>
+    );
+}
+
+export default function NewTransactionPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <NewTransactionForm />
+        </Suspense>
     );
 }

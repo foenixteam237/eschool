@@ -1,5 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { GraduationCap, Search, Save, Trash2, Plus, ArrowLeft, Info, HelpCircle, Check, AlertCircle } from "lucide-react";
@@ -9,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DeleteModal } from "@/components/shared/delete-modal";
 
-export default function GradeEntryPage() {
+function GradeEntryPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const classId = searchParams.get("classId") || "1";
@@ -327,5 +331,13 @@ export default function GradeEntryPage() {
                 </CardContent>
             </Card>
         </div >
+    );
+}
+
+export default function GradeEntryPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500">Chargement…</div>}>
+            <GradeEntryPageInner />
+        </Suspense>
     );
 }
