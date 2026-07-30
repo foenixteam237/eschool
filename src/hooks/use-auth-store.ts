@@ -25,26 +25,23 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ isLoading: true, error: null });
         try {
             const response = await authService.login(credentials);
-            
-            console.log('📦 Login response structure:', response);
-            console.log('📦 response.data:', response.data);
-            
-            // Vérifier que la réponse a la bonne structure
-            if (!response || !response.data || !response.data.user) {
-                console.error('❌ Invalid response structure:', response);
+
+            // L'API renvoie { user, token }
+            if (!response || !response.user) {
                 throw new Error('Réponse serveur invalide');
             }
-            
+
             // Update store with user data
             set({
-                user: { 
-                    id: response.data.user.id, 
-                    firstName: response.data.user.firstName, 
-                    lastName: response.data.user.lastName, 
-                    email: response.data.user.email, 
-                    role: response.data.user.role, 
-                    estActif: true 
+                user: {
+                    id: response.user.id,
+                    firstName: response.user.firstName,
+                    lastName: response.user.lastName,
+                    email: response.user.email,
+                    role: response.user.role,
+                    estActif: true,
                 },
+                role: response.user.role,
                 isAuthenticated: true,
                 isLoading: false,
                 error: null,

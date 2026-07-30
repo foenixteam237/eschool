@@ -5,7 +5,7 @@
 import { authService } from './auth.service';
 import { Grade } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface CreateGradeRequest {
   studentId: string;
@@ -72,12 +72,14 @@ class GradesService {
     quarter?: number,
     subjectId?: string
   ): Promise<Grade[]> {
-    const params = new URLSearchParams({ studentId });
+    const params = new URLSearchParams();
     if (quarter) params.append('quarter', quarter.toString());
     if (subjectId) params.append('subjectId', subjectId);
+    const qs = params.toString();
 
+    // L'API expose les notes d'un élève via /students/:id/grades
     const response = await fetch(
-      `${API_URL}/grades/student/${studentId}?${params.toString()}`,
+      `${API_URL}/students/${studentId}/grades${qs ? `?${qs}` : ''}`,
       { headers: this.getAuthHeaders() }
     );
 

@@ -1,61 +1,76 @@
-# Déploiement — eSchool (Vercel + Supabase)
+# Déploiement — eSchool
 
-Architecture cible : **Next.js 15 (App Router)** hébergé sur **Vercel**, base de
-données et authentification sur **Supabase** (PostgreSQL + Auth + Storage).
-Isolation multi-établissements assurée par **Row Level Security (RLS)**.
+## Architecture (3 tiers)
 
-> État : fondation en cours de mise en place. Ce guide sera complété au fil des
-> phases (auth, académique, finance, paiements…).
+```
+┌──────────────────────────────┐   HTTP/JSON + JWT Bearer
+│  Frontend Next.js (Vercel)   │ ───────────────────────────┐
+│  dépôt: eschool              │                            │
+└──────────────────────────────┘                            ▼
+                                         ┌───────────────────────────────┐
+                                         │  API NestJS (eschool-api)      │
+                                         │  préfixe: /api/v1              │
+                                         └───────────────┬───────────────┘
+                                                         │ Prisma ORM
+                                                         ▼
+                                         ┌───────────────────────────────┐
+                                         │  PostgreSQL (Supabase)         │
+                                         └───────────────────────────────┘
+```
 
-## 1. Prérequis
+- **Frontend** (ce dépôt) : Next.js 15, hébergé sur **Vercel**.
+- **API** : `eschool-api` (NestJS + Prisma), à héberger séparément (Railway,
+  Render, Fly.io, ou Vercel en fonctions serverless).
+- **Base de données** : **Supabase** (PostgreSQL), pilotée par l'API via Prisma.
 
-- Un compte [Supabase](https://supabase.com) et un projet créé.
-- Un compte [Vercel](https://vercel.com) connecté au dépôt GitHub.
-- Node.js 20+ en local.
+Le frontend ne communique qu'avec l'API (JWT Bearer). Les secrets de base de
+données et de paiement (Orange Money, MTN MoMo, carte) vivent **côté API**, pas
+dans le frontend.
 
-## 2. Configuration Supabase
+## 1. Frontend — variables d'environnement
 
-1. Récupérer les clés dans **Project Settings → API** :
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` → `SUPABASE_SERVICE_ROLE_KEY` (⚠️ secret serveur)
-2. Appliquer les migrations SQL du dossier [`supabase/migrations`](../supabase/migrations) :
-   - via le **SQL Editor** du dashboard (copier/coller le contenu), ou
-   - via la CLI Supabase : `supabase db push`.
-3. Les politiques **RLS** sont activées par les migrations : chaque
-   établissement ne voit que ses propres données.
+Copier `.env.example` → `.env.local` :
 
-## 3. Variables d'environnement
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+NEXT_PUBLIC_JWT_STORAGE_KEY=eschool_token
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-Copier `.env.example` → `.env.local` et remplir (voir le fichier pour la liste
-complète : Supabase, Orange Money, MTN MoMo, carte, SMTP).
+En production, `NEXT_PUBLIC_API_URL` = URL publique de l'API déployée
+(ex. `https://api.eschool.xyz/api/v1`).
 
-⚠️ **Ne jamais committer** `.env.local` ni aucune clé réelle. En production,
-définir les variables dans **Vercel → Project → Settings → Environment
-Variables**. La clé `SUPABASE_SERVICE_ROLE_KEY` et les secrets de paiement sont
-**côté serveur uniquement** (pas de préfixe `NEXT_PUBLIC_`).
-
-## 4. Lancement local
+## 2. Lancement local (frontend)
 
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm run build    # vérifie le build de production
+npm run build    # build de production (vérifié)
 npm run lint     # qualité de code
 ```
 
-## 5. Déploiement Vercel
+L'API doit tourner en parallèle (voir le dépôt `eschool-api`, port 3001 par
+défaut) et autoriser l'origine du frontend via `CORS_ORIGIN`.
 
-1. Importer le dépôt dans Vercel (framework détecté : Next.js).
-2. Renseigner les variables d'environnement (étape 3).
-3. Déployer. Vercel exécute `next build` et publie automatiquement.
+## 3. Déploiement Vercel (frontend)
 
-## 6. Conformité & confidentialité (résumé)
+1. Importer le dépôt `eschool` dans Vercel (framework Next.js détecté).
+2. Définir les variables d'environnement (section 1) — pointer
+   `NEXT_PUBLIC_API_URL` vers l'API de production.
+3. Déployer.
 
-- **Isolation des données** : RLS Postgres par `etablissement_id`.
-- **Sessions** : cookies `HttpOnly` gérés par `@supabase/ssr` (pas de token en
-  `localStorage`).
+## 4. API + base de données
+
+Voir le dépôt **`eschool-api`** (`README.md`, `SUPABASE_SETUP.md`,
+`INSTALLATION.md`) : configuration `DATABASE_URL` (Supabase), migrations Prisma
+(`prisma migrate deploy`), et `CORS_ORIGIN` = domaine du frontend Vercel.
+
+## 5. Authentification & sécurité (résumé)
+
+- **JWT** émis par l'API. Le frontend le stocke en `localStorage` (header
+  `Authorization: Bearer`) et en cookie `SameSite=Lax` (pour le contrôle
+  d'accès par le middleware Next.js).
+- **Contrôle d'accès** : le middleware redirige selon le rôle vers l'espace
+  correspondant ; l'autorisation réelle est appliquée par les gardes de l'API.
 - **Paiements par carte** : tokenisation côté PSP, **aucune donnée de carte
-  (PAN/CVV) stockée** dans notre base (principe PCI-DSS).
-- **Webhooks de paiement** : signature vérifiée via les secrets `*_WEBHOOK_SECRET`.
-- **Secrets** : jamais commités, gérés via variables d'environnement.
+  stockée** (principe PCI-DSS). Intégration côté API.

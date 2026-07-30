@@ -7,37 +7,36 @@ import { apiClient } from '@/lib/api-client';
 import { ROUTES } from '@/lib/constants';
 import { UserRole } from '@/types';
 
-// L'URL de base inclut déjà /v1/api
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/v1/api';
-// Utiliser les routes locales Next.js pour éviter les problèmes CORS
+// Routes locales Next.js (proxy) pour éviter les problèmes CORS sur l'auth.
 const API_URL = '/api/auth';
 const JWT_STORAGE_KEY = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';
+const ROLE_STORAGE_KEY = 'eschool_role';
 
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
-  success: boolean;
-  data: {
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: UserRole;
-    };
-    token: string;
-  };
-  timestamp: string;
+// Forme de réponse de l'API eschool-api : { user, token }
+export interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
 }
+
+export interface LoginResponse {
+  user: AuthUser;
+  token: string;
+}
+
 export interface RegisterRequest {
   email: string;
   password: string;
-  nom: string;
-  prenom: string;
-  role: UserRole;
+  firstName: string;
+  lastName: string;
+  role?: UserRole;
 }
 
 export interface AuthResponse {
@@ -72,12 +71,11 @@ class AuthService {
       }
 
       const data: LoginResponse = await response.json();
-      console.debug('✅ Login successful, token received');
-      
-      if (data.data.token) {
-        this.setToken(data.data.token);
+
+      if (data.token) {
+        this.setToken(data.token);
+        this.setRole(data.user?.role);
       }
-      console.log('User data:', data.data.user);
       return data;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Login failed';
@@ -105,9 +103,10 @@ class AuthService {
       }
 
       const result: LoginResponse = await response.json();
-      
-      if (result.data.token) {
-        this.setToken(result.data.token);
+
+      if (result.token) {
+        this.setToken(result.token);
+        this.setRole(result.user?.role);
       }
 
       return result;
@@ -198,21 +197,33 @@ class AuthService {
   }
 
   /**
-   * Store token
+   * Store token — localStorage (header Bearer) + cookie (middleware).
+   * Le cookie n'est PAS HttpOnly car le token doit aussi servir de Bearer
+   * côté client ; la sécurité réelle est assurée par le JWT signé et les
+   * gardes de l'API. `SameSite=Lax` limite les envois cross-site.
    */
   private setToken(token: string): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(JWT_STORAGE_KEY, token);
-    }
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(JWT_STORAGE_KEY, token);
+    document.cookie = `${JWT_STORAGE_KEY}=${token}; path=/; max-age=604800; SameSite=Lax`;
   }
 
   /**
-   * Clear token
+   * Store role in a cookie so the middleware can enforce role-based access.
+   */
+  private setRole(role?: string): void {
+    if (typeof window === 'undefined' || !role) return;
+    document.cookie = `${ROLE_STORAGE_KEY}=${role}; path=/; max-age=604800; SameSite=Lax`;
+  }
+
+  /**
+   * Clear token + role (localStorage and cookies)
    */
   private clearToken(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(JWT_STORAGE_KEY);
-    }
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(JWT_STORAGE_KEY);
+    document.cookie = `${JWT_STORAGE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+    document.cookie = `${ROLE_STORAGE_KEY}=; path=/; max-age=0; SameSite=Lax`;
   }
 
   /**

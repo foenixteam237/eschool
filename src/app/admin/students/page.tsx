@@ -75,7 +75,7 @@ export default function AdminStudentsPage() {
     const handleCreateStudent = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!formData.email || !formData.password || !formData.nom || !formData.prenom) {
+        if (!formData.studentId || !formData.email || !formData.firstName || !formData.lastName) {
             toast.error('Veuillez remplir tous les champs');
             return;
         }
@@ -116,6 +116,12 @@ export default function AdminStudentsPage() {
                     <h3 className="text-lg font-semibold mb-4">Créer un nouvel étudiant</h3>
                     <form onSubmit={handleCreateStudent} className="grid grid-cols-2 gap-4">
                         <Input
+                            placeholder="Matricule"
+                            value={formData.studentId || ''}
+                            onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                            required
+                        />
+                        <Input
                             placeholder="Email"
                             type="email"
                             value={formData.email || ''}
@@ -123,23 +129,21 @@ export default function AdminStudentsPage() {
                             required
                         />
                         <Input
-                            placeholder="Mot de passe"
-                            type="password"
-                            value={formData.password || ''}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            required
-                        />
-                        <Input
                             placeholder="Nom"
-                            value={formData.nom || ''}
-                            onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                            value={formData.lastName || ''}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                             required
                         />
                         <Input
                             placeholder="Prénom"
-                            value={formData.prenom || ''}
-                            onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
+                            value={formData.firstName || ''}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                             required
+                        />
+                        <Input
+                            placeholder="Téléphone (optionnel)"
+                            value={formData.phone || ''}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         />
                         <div className="col-span-2 flex gap-2">
                             <Button type="submit" className="bg-green-600 hover:bg-green-700">

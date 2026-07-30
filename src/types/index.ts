@@ -1,4 +1,30 @@
-export type UserRole = "SUPERADMIN" | "ADMIN" | "ENSEIGNANT" | "PARENT" | "ELEVE";
+/**
+ * Rôles alignés sur l'enum `UserRole` de l'API (eschool-api, Prisma).
+ * Toute valeur doit exister côté backend.
+ */
+export type UserRole =
+    | "SUPERADMIN"
+    | "ADMIN"
+    | "PROVISEUR_PRINCIPAL"
+    | "CENSEUR"
+    | "SURVEILLANT_GENERAL"
+    | "ECONOME"
+    | "TEACHER"
+    | "STUDENT"
+    | "PARENT";
+
+/** Espace d'interface (dossier de routes) associé à chaque rôle. */
+export const UI_AREA_BY_ROLE: Record<UserRole, string> = {
+    SUPERADMIN: "superadmin",
+    ADMIN: "admin",
+    PROVISEUR_PRINCIPAL: "admin",
+    CENSEUR: "admin",
+    SURVEILLANT_GENERAL: "admin",
+    ECONOME: "admin",
+    TEACHER: "teacher",
+    STUDENT: "eleve",
+    PARENT: "parent",
+};
 
 export interface User {
     id: string;

@@ -6,7 +6,7 @@ import { authService } from './auth.service';
 import { apiClient } from '@/lib/api-client';
 import { ROUTES } from '@/lib/routes';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface AttendanceRecord {
   id: string;

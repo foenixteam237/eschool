@@ -1,29 +1,26 @@
 /**
- * Students Service - Connecté au backend NestJS
+ * Students Service — connecté à eschool-api (NestJS).
+ * L'API renvoie des enregistrements Student avec l'utilisateur imbriqué
+ * (`user`). Ce service aplatit la réponse vers le type `Student` du frontend.
  */
 
 import { authService } from './auth.service';
 import { Student } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface CreateStudentRequest {
+  studentId: string;   // matricule
   email: string;
-  password: string;
-  nom: string;
-  prenom: string;
-  dateNaissance?: string;
-  genre?: 'M' | 'F' | 'Autre';
-  classeId?: string;
-  parentId?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
 }
 
 export interface UpdateStudentRequest {
-  nom?: string;
-  prenom?: string;
-  dateNaissance?: string;
-  genre?: 'M' | 'F' | 'Autre';
-  classeId?: string;
+  phone?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'GRADUATED' | 'SUSPENDED' | 'TRANSFERRED';
+  classId?: string;
 }
 
 export interface StudentsListResponse {
@@ -31,6 +28,38 @@ export interface StudentsListResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+// Forme brute renvoyée par l'API (partielle)
+interface ApiStudent {
+  id: string;
+  studentId?: string;
+  status?: string;
+  classId?: string;
+  class?: { id: string } | null;
+  user?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    photoUrl?: string;
+    isActive?: boolean;
+  } | null;
+}
+
+function mapStudent(s: ApiStudent): Student {
+  return {
+    id: s.id,
+    matricule: s.studentId ?? '',
+    email: s.user?.email ?? '',
+    firstName: s.user?.firstName ?? '',
+    lastName: s.user?.lastName ?? '',
+    role: 'STUDENT',
+    telephone: s.user?.phone,
+    photoUrl: s.user?.photoUrl,
+    estActif: s.user?.isActive ?? true,
+    classeId: s.class?.id ?? s.classId,
+  };
 }
 
 class StudentsService {
@@ -43,117 +72,72 @@ class StudentsService {
   }
 
   /**
-   * Get all students with pagination
+   * Liste des élèves (pagination via skip/take côté API).
    */
   async getStudents(
     page: number = 1,
     limit: number = 20,
-    search?: string
+    _search?: string
   ): Promise<StudentsListResponse> {
+    const skip = (page - 1) * limit;
     const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
+      skip: skip.toString(),
+      take: limit.toString(),
     });
 
-    if (search) {
-      params.append('search', search);
-    }
+    const response = await fetch(`${API_URL}/students?${params.toString()}`, {
+      headers: this.getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Impossible de charger les élèves');
 
-    const response = await fetch(
-      `${API_URL}/students?${params.toString()}`,
-      { headers: this.getAuthHeaders() }
-    );
-
-    if (!response.ok) throw new Error('Failed to fetch students');
-    return response.json();
+    const raw: ApiStudent[] = await response.json();
+    const data = Array.isArray(raw) ? raw.map(mapStudent) : [];
+    return { data, total: data.length, page, limit };
   }
 
-  /**
-   * Get student by ID
-   */
   async getStudent(id: string): Promise<Student> {
-    const response = await fetch(
-      `${API_URL}/students/${id}`,
-      { headers: this.getAuthHeaders() }
-    );
-
-    if (!response.ok) throw new Error('Failed to fetch student');
-    return response.json();
+    const response = await fetch(`${API_URL}/students/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Impossible de charger l'élève");
+    return mapStudent(await response.json());
   }
 
-  /**
-   * Create new student
-   */
   async createStudent(data: CreateStudentRequest): Promise<Student> {
-    const response = await fetch(
-      `${API_URL}/students`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) throw new Error('Failed to create student');
-    return response.json();
+    const response = await fetch(`${API_URL}/students`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Impossible de créer l'élève");
+    return mapStudent(await response.json());
   }
 
-  /**
-   * Update student
-   */
   async updateStudent(id: string, data: UpdateStudentRequest): Promise<Student> {
-    const response = await fetch(
-      `${API_URL}/students/${id}`,
-      {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) throw new Error('Failed to update student');
-    return response.json();
+    const response = await fetch(`${API_URL}/students/${id}`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Impossible de mettre à jour l'élève");
+    return mapStudent(await response.json());
   }
 
-  /**
-   * Delete student
-   */
   async deleteStudent(id: string): Promise<void> {
-    const response = await fetch(
-      `${API_URL}/students/${id}`,
-      {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      }
-    );
-
-    if (!response.ok) throw new Error('Failed to delete student');
+    const response = await fetch(`${API_URL}/students/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Impossible de supprimer l'élève");
   }
 
-  /**
-   * Get students by class
-   */
   async getStudentsByClass(classId: string): Promise<Student[]> {
-    const response = await fetch(
-      `${API_URL}/students?classId=${classId}`,
-      { headers: this.getAuthHeaders() }
-    );
-
-    if (!response.ok) throw new Error('Failed to fetch students by class');
-    return response.json();
-  }
-
-  /**
-   * Get students by parent
-   */
-  async getStudentsByParent(parentId: string): Promise<Student[]> {
-    const response = await fetch(
-      `${API_URL}/students?parentId=${parentId}`,
-      { headers: this.getAuthHeaders() }
-    );
-
-    if (!response.ok) throw new Error('Failed to fetch students by parent');
-    return response.json();
+    const response = await fetch(`${API_URL}/students?classId=${classId}`, {
+      headers: this.getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Impossible de charger les élèves de la classe');
+    const raw: ApiStudent[] = await response.json();
+    return Array.isArray(raw) ? raw.map(mapStudent) : [];
   }
 }
 

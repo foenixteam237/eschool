@@ -2,8 +2,9 @@
  * Configuration et constants du projet
  */
 
+// URL de l'API eschool-api (NestJS). Inclut le préfixe global `/api/v1`.
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
@@ -53,11 +54,24 @@ export const ROUTES = {
   UPDATE_PROFILE: '/profile/update',
 } as const;
 
+// Valeurs alignées sur l'enum UserRole de l'API.
 export const USER_ROLES = {
+  SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
-  ENSEIGNANT: 'ENSEIGNANT',
+  PROVISEUR_PRINCIPAL: 'PROVISEUR_PRINCIPAL',
+  CENSEUR: 'CENSEUR',
+  SURVEILLANT_GENERAL: 'SURVEILLANT_GENERAL',
+  ECONOME: 'ECONOME',
+  TEACHER: 'TEACHER',
+  STUDENT: 'STUDENT',
   PARENT: 'PARENT',
-  ELEVE: 'ELEVE',
+} as const;
+
+// Storage keys (JWT partagé entre localStorage — pour le header Bearer — et
+// un cookie — pour l'application des règles d'accès par le middleware).
+export const AUTH_STORAGE = {
+  TOKEN_KEY: process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token',
+  ROLE_KEY: 'eschool_role',
 } as const;
 
 export const GRADE_TYPES = {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap, LogIn, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { UI_AREA_BY_ROLE } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,26 +20,13 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            console.log('📝 Submitting login form with email:', email);
             const response = await login({ email, password });
-            
-            console.log('🎉 Login response received in page component:');
-            console.log('Response:', response);
-            
-            // Redirect based on user role
-            const rolePaths: Record<string, string> = {
-                ADMIN: "admin",
-                ENSEIGNANT: "teacher",
-                PARENT: "parent",
-                ELEVE: "eleve"
-            };
 
-            const path = rolePaths[response.data.user.role] || "dashboard";
-            console.log(`🚀 Redirecting to /${path}/dashboard`);
-            router.push(`/${path}/dashboard`);
-        } catch (err) {
-            // Error is already set in the store
-            console.log("❌ Login error in page component:", err);
+            // Redirection vers l'espace correspondant au rôle
+            const area = UI_AREA_BY_ROLE[response.user.role] || "eleve";
+            router.push(`/${area}/dashboard`);
+        } catch {
+            // L'erreur est déjà positionnée dans le store
         }
     };
 

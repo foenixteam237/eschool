@@ -1,45 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UI_AREA_BY_ROLE, UserRole } from '@/types';
 
-// Routes qui ne nécessitent pas d'authentification
-const PUBLIC_ROUTES = ['/login', '/'];
+const TOKEN_COOKIE = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';
+const ROLE_COOKIE = 'eschool_role';
 
-// Routes protégées par rôle
-const ROLE_ROUTES: Record<string, string[]> = {
-  ADMIN: ['/admin'],
-  ENSEIGNANT: ['/teacher'],
-  PARENT: ['/parent'],
-  ELEVE: ['/eleve'],
-};
+// Routes accessibles sans authentification
+const PUBLIC_ROUTES = ['/login'];
+
+// Espaces protégés (premier segment de l'URL)
+const PROTECTED_AREAS = ['superadmin', 'admin', 'teacher', 'parent', 'eleve'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Les routes publiques sont toujours accessibles
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  // Page d'accueil publique
+  if (pathname === '/') {
     return NextResponse.next();
   }
 
-  // Récupérer le token JWT
-  const token = request.cookies.get(process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token')?.value;
+  const token = request.cookies.get(TOKEN_COOKIE)?.value;
+  const role = request.cookies.get(ROLE_COOKIE)?.value as UserRole | undefined;
+  const userArea = role ? UI_AREA_BY_ROLE[role] : undefined;
 
-  // Si pas de token et route protégée, rediriger vers login
-  if (!token) {
+  // Utilisateur déjà connecté qui visite /login → renvoyer vers son espace
+  if (PUBLIC_ROUTES.some((r) => pathname.startsWith(r))) {
+    if (token && userArea) {
+      return NextResponse.redirect(new URL(`/${userArea}/dashboard`, request.url));
+    }
+    return NextResponse.next();
+  }
+
+  const area = pathname.split('/')[1];
+
+  // Route protégée sans token → login
+  if (PROTECTED_AREAS.includes(area) && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Ici, vous pouvez ajouter une vérification de rôle supplémentaire
-  // Pour l'instant, tout utilisateur authentifié peut accéder aux routes
+  // Token présent mais rôle ne correspond pas à l'espace demandé → son espace
+  if (PROTECTED_AREAS.includes(area) && userArea && area !== userArea) {
+    return NextResponse.redirect(new URL(`/${userArea}/dashboard`, request.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Toutes les routes sauf :
+     * - api (routes API Next.js)
+     * - _next/static, _next/image
+     * - favicon.ico, fichiers publics
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
