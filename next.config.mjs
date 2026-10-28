@@ -6,6 +6,7 @@ const nextConfig = {
         // TypeScript type-checking remains enforced during the build.
         ignoreDuringBuilds: true,
     },
+    output: 'standalone',
 };
 
 export default nextConfig;

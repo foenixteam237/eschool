@@ -11,6 +11,7 @@ export default function LessonLogDetailPage() {
     const router = useRouter();
     const params = useParams();
     const logId = params.id;
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Mock data - en production, ceci viendrait d'une API
     const logDetails = {
@@ -142,8 +143,6 @@ export default function LessonLogDetailPage() {
             minute: '2-digit'
         });
     };
-
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDelete = () => {
         console.log("Suppression du cahier de texte:", logId);
