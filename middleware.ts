@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { AUTH_COOKIE_NAME, hasPermissionForPath, isJwtToken } from '@/lib/auth';
 
-// Routes qui ne nécessitent pas d'authentification
 const PUBLIC_ROUTES = ['/login', '/'];
 
 export function middleware(request: NextRequest) {

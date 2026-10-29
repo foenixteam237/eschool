@@ -8,11 +8,12 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
     return null;
   }
 
-  if (token.startsWith("mock-")) {
+  const candidate = token.trim();
+  if (!candidate || candidate.startsWith("mock-")) {
     return null;
   }
 
-  const parts = token.split(".");
+  const parts = candidate.split(".");
   if (parts.length !== 3) {
     return null;
   }
@@ -20,14 +21,15 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
-    const decoded = Buffer.from(padded, "base64").toString("utf8");
+    const decoded = globalThis.atob(padded);
     const parsed = JSON.parse(decoded) as Record<string, unknown>;
 
     if (!parsed || typeof parsed !== "object") {
       return null;
     }
 
-    if (typeof parsed.exp === "number" && Date.now() >= parsed.exp * 1000) {
+    const exp = parsed.exp;
+    if (typeof exp === "number" && Date.now() >= exp * 1000) {
       return null;
     }
 
@@ -35,6 +37,24 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+export function extractBearerToken(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.toLowerCase().startsWith("bearer ")) {
+    const token = normalized.slice(7).trim();
+    return token || null;
+  }
+
+  return normalized;
 }
 
 export function isJwtToken(token: string | undefined): boolean {
@@ -63,6 +83,7 @@ export function getCookieOptions() {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: isProduction,
+    maxAge: 60 * 60 * 24 * 7,
   };
 }
 
