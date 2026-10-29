@@ -1,34 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { AUTH_COOKIE_NAME, getCookieOptions } from '@/lib/auth';
+
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/v1/api').replace(/\/$/, '');
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('Authorization');
-    
-    console.log('[API Route] POST /api/auth/logout');
-    
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
 
+    try {
       await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': token }),
+          ...(token && { Authorization: token }),
         },
-        signal: controller.signal,
       }).catch(() => null);
-      clearTimeout(timeoutId);
     } catch {
-      // Ignore backend errors on logout
+      // Ignore backend errors on logout.
     }
 
-    console.log('[API Route] Logout successful');
     const res = NextResponse.json({ message: 'Logout successful' });
-    const cookieKey = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';
-    res.cookies.delete(cookieKey);
+    res.cookies.set(AUTH_COOKIE_NAME, '', {
+      ...getCookieOptions(),
+      maxAge: 0,
+      expires: new Date(0),
+    });
     return res;
   } catch (error) {
     console.error('[API Route] Error:', error);

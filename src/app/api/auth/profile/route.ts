@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token,
+        Authorization: token,
       },
     });
 
@@ -29,9 +29,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('[API Route] Profile backend unavailable:', error);
+    console.error('[API Route] Error:', error);
     return NextResponse.json(
-      { message: 'Impossible de contacter le backend eSchool.', error: 'BACKEND_UNAVAILABLE' },
+      {
+        message: 'Profile service unavailable',
+        error: 'PROFILE_UNAVAILABLE',
+      },
       { status: 503 }
     );
   }

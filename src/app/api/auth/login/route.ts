@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { AUTH_COOKIE_NAME, getCookieOptions } from '@/lib/auth';
+
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/v1/api').replace(/\/$/, '');
 
 export async function POST(request: NextRequest) {
@@ -21,18 +23,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    const res = NextResponse.json(data);
-    if (data?.data?.token) {
-      const cookieKey = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';
-      res.cookies.set(cookieKey, data.data.token, { path: '/', httpOnly: false });
+    const token = data?.data?.token ?? data?.token;
+
+    if (typeof token !== 'string' || !token.trim()) {
+      return NextResponse.json(
+        { message: 'Authentication backend did not return a token', error: 'NO_TOKEN' },
+        { status: 401 }
+      );
     }
 
+    const res = NextResponse.json(data);
+    res.cookies.set(AUTH_COOKIE_NAME, token, getCookieOptions());
     return res;
   } catch (error) {
-    console.error('[API Route] Login backend unavailable:', error);
+    console.error('[API Route] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
-      { message: 'Impossible de contacter le backend eSchool.', error: 'BACKEND_UNAVAILABLE' },
-      { status: 503 }
+      { message: errorMessage, error: 'LOGIN_ERROR' },
+      { status: 500 }
     );
   }
 }
