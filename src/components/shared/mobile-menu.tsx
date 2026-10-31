@@ -13,7 +13,9 @@ import {
     CreditCard,
     MessageSquare,
     Settings,
-    LogOut
+    LogOut,
+    School,
+    Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,12 +33,14 @@ export function MobileMenu({ role }: MobileMenuProps) {
     const menuItems = {
         admin: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
+            { icon: School, label: "Établissements", href: "/admin/etablissements" },
+            { icon: BookOpen, label: "Classes & Matières", href: "/admin/academics" },
             { icon: Users, label: "Élèves", href: "/admin/students" },
             { icon: GraduationCap, label: "Enseignants", href: "/admin/teachers" },
-            { icon: BookOpen, label: "Classes & Matières", href: "/admin/academics" },
+            { icon: Calendar, label: "Emploi du temps", href: "/admin/timetable" },
             { icon: Users, label: "Assiduité", href: "/admin/attendance" },
-            { icon: GraduationCap, label: "Notes", href: "/admin/grades" },
-            { icon: CreditCard, label: "Finance", href: "/admin/finance" },
+            { icon: GraduationCap, label: "Notes & Bulletins", href: "/admin/grades" },
+            { icon: CreditCard, label: "Finance & Frais", href: "/admin/finance" },
             { icon: MessageSquare, label: "Messagerie", href: "/admin/messages" },
             { icon: Settings, label: "Paramètres", href: "/admin/settings" },
         ],

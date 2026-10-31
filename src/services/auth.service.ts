@@ -3,12 +3,8 @@
  * Connecté au backend NestJS via API routes Next.js
  */
 
-import { apiClient } from '@/lib/api-client';
-import { ROUTES } from '@/lib/constants';
 import { UserRole } from '@/types';
 
-// L'URL de base inclut déjà /v1/api
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/v1/api';
 // Utiliser les routes locales Next.js pour éviter les problèmes CORS
 const API_URL = '/api/auth';
 const JWT_STORAGE_KEY = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';

@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, School } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "@/components/shared/mobile-menu";
 import { UserMenu } from "@/components/shared/user-menu";
+import { useState } from "react";
 
 interface NavbarProps {
     title: string;
@@ -14,11 +15,29 @@ interface NavbarProps {
 }
 
 export function Navbar({ title, userName, userRole, role }: NavbarProps) {
+    const [activeSchool, setActiveSchool] = useState("Lycée Général Leclerc (Yaoundé)");
+
     return (
         <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-20">
             <div className="flex items-center gap-4">
                 <MobileMenu role={role} />
-                <h2 className="text-slate-500 font-medium hidden md:block">{title}</h2>
+                <div className="hidden md:flex items-center gap-2">
+                    <span className="text-slate-400 font-medium text-xs uppercase tracking-wider">{title}</span>
+                    <span className="text-slate-300">|</span>
+                    <div className="flex items-center gap-1.5 bg-blue-50/80 hover:bg-blue-100/70 text-primary-blue px-2.5 py-1 rounded-lg border border-blue-100 transition-colors">
+                        <School size={15} className="shrink-0" />
+                        <select
+                            value={activeSchool}
+                            onChange={(e) => setActiveSchool(e.target.value)}
+                            className="bg-transparent text-xs font-bold text-primary-blue outline-none cursor-pointer pr-1"
+                        >
+                            <option value="Lycée Général Leclerc (Yaoundé)">LGL Yaoundé (Mfoundi)</option>
+                            <option value="Lycée Bilingue de Deido (Douala)">LBD Douala (Wouri)</option>
+                            <option value="Collège Libermann (Douala)">Collège Libermann</option>
+                            <option value="Lycée Classique de Bafoussam">L.C. Bafoussam (Mifi)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div className="flex-1 max-w-md mx-4 hidden lg:block">

@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 -H 0.0.0.0",
+    "dev": "node server-backend-3500.mjs & next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "start": "node server-backend-3500.mjs & next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-slot": "^1.2.4",
-    "@supabase/ssr": "^0.15.0",
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.49.10",
     "@tailwindcss/postcss": "^4.1.11",
     "chart.js": "^4.4.7",
@@ -24,10 +24,10 @@
     "react": "^19.1.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^19.1.0",
-    "react-hook-form": "^4.0.0",
+    "react-hook-form": "^7.54.1",
     "react-toastify": "^11.0.0",
     "tailwind-merge": "^2.5.5",
-    "zod": "^4.0.0",
+    "zod": "^3.24.1",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

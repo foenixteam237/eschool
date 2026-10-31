@@ -50,23 +50,27 @@ const mockGrades = [
 ];
 
 // Mock Students Data
-const initialStudents = Array.from({ length: 45 }).map((_, i) => ({
-    id: i + 1,
-    name: ["Nguene Marie", "Talla Jean", "Abessolo Pierre", "Minka Yvette", "Kamga Paul"][i % 5] + ` ${i + 1}`,
-    matricule: `24G${1000 + i}`,
-    class: "6ème A", // Added class
-    average: Number((Math.random() * 10 + 8).toFixed(2)),
-    rank: i + 1,
-    status: Math.random() > 0.8 ? "Redoublant" : "Nouveau",
-    absences: Math.floor(Math.random() * 5),
-    grades: {
-        math: Number((Math.random() * 10 + 8).toFixed(1)),
-        fr: Number((Math.random() * 10 + 8).toFixed(1)),
-        ang: Number((Math.random() * 10 + 8).toFixed(1)),
-        hist: Number((Math.random() * 10 + 8).toFixed(1)),
-    },
-    decision: undefined // Start undefined
-}));
+const initialStudents = Array.from({ length: 45 }).map((_, i) => {
+    const baseGrade = 17 - (i * 0.2);
+    const avg = Number(Math.max(8.5, baseGrade).toFixed(2));
+    return {
+        id: i + 1,
+        name: ["Nguene Marie", "Talla Jean", "Abessolo Pierre", "Minka Yvette", "Kamga Paul"][i % 5] + ` ${i + 1}`,
+        matricule: `24G${1000 + i}`,
+        class: "6ème A",
+        average: avg,
+        rank: i + 1,
+        status: i % 6 === 0 ? "Redoublant" : "Nouveau",
+        absences: (i * 3) % 5,
+        grades: {
+            math: Number(Math.min(20, Math.max(7, avg + ((i % 3) - 1))).toFixed(1)),
+            fr: Number(Math.min(20, Math.max(7, avg + (((i + 1) % 3) - 1))).toFixed(1)),
+            ang: Number(Math.min(20, Math.max(7, avg + (((i + 2) % 3) - 1))).toFixed(1)),
+            hist: Number(Math.min(20, Math.max(7, avg)).toFixed(1)),
+        },
+        decision: undefined
+    };
+});
 
 export default function AdminGradesDetailPage() {
     const params = useParams(); // Get class ID

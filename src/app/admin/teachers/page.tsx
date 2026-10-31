@@ -36,11 +36,20 @@ function AdminTeachersPageInner() {
     const [searchTerm, setSearchTerm] = useState("");
 
     const [teachers, setTeachers] = useState([
-        { id: "1", name: "Jean DUPONT", subjects: ["Maths", "Physique"], classes: ["6ème A", "3ème B"], email: "j.dupont@ecole.com", phone: "699 00 11 22" },
-        { id: "2", name: "Marie SMITH", subjects: ["Anglais"], classes: ["6ème A", "5ème B", "Terminal S"], email: "m.smith@ecole.com", phone: "677 33 44 55" },
-        { id: "3", name: "Paul LEFEBVRE", subjects: ["SVT"], classes: ["3ème B", "2nde C"], email: "p.lefebvre@ecole.com", phone: "655 77 88 99" },
-        { id: "4", name: "Alice MVE", subjects: ["Maths"], classes: ["4ème A", "Tle C"], email: "a.mve@ecole.com", phone: "688 11 22 33" },
+        { id: "1", name: "Jean DUPONT", subjects: ["Maths", "Physique"], classes: ["6ème A", "3ème B"], email: "j.dupont@ecole.com", phone: "699 00 11 22", isAdmin: true },
+        { id: "2", name: "Marie SMITH", subjects: ["Anglais"], classes: ["6ème A", "5ème B", "Terminal S"], email: "m.smith@ecole.com", phone: "677 33 44 55", isAdmin: false },
+        { id: "3", name: "Paul LEFEBVRE", subjects: ["SVT"], classes: ["3ème B", "2nde C"], email: "p.lefebvre@ecole.com", phone: "655 77 88 99", isAdmin: false },
+        { id: "4", name: "Alice MVE", subjects: ["Maths"], classes: ["4ème A", "Tle C"], email: "a.mve@ecole.com", phone: "688 11 22 33", isAdmin: false },
     ]);
+
+    const toggleAdminRole = (id: string) => {
+        setTeachers(prev => prev.map(t => {
+            if (t.id === id) {
+                return { ...t, isAdmin: !t.isAdmin };
+            }
+            return t;
+        }));
+    };
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState<{ id: string, name: string } | null>(null);
@@ -174,7 +183,14 @@ function AdminTeachersPageInner() {
                                     <GraduationCap size={24} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-base truncate">{teacher.name}</CardTitle>
+                                    <div className="flex items-center gap-2">
+                                        <CardTitle className="text-base truncate">{teacher.name}</CardTitle>
+                                        {teacher.isAdmin && (
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                                Admin École
+                                            </span>
+                                        )}
+                                    </div>
                                     <CardDescription className="text-xs uppercase font-bold text-primary-blue tracking-tighter">
                                         {teacher.subjects.join(", ")}
                                     </CardDescription>
@@ -216,15 +232,28 @@ function AdminTeachersPageInner() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2 pt-2">
-                                    <Link href={`/admin/teachers/${teacher.id}`} className="flex-1">
-                                        <Button variant="outline" size="sm" className="w-full text-[10px] h-9 font-bold border-slate-100 hover:bg-slate-50 text-slate-600 hover:text-primary-blue tracking-widest uppercase">
-                                            PROFIL
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <div className="flex gap-2">
+                                        <Link href={`/admin/teachers/${teacher.id}`} className="flex-1">
+                                            <Button variant="outline" size="sm" className="w-full text-[10px] h-9 font-bold border-slate-100 hover:bg-slate-50 text-slate-600 hover:text-primary-blue tracking-widest uppercase">
+                                                PROFIL
+                                            </Button>
+                                        </Link>
+                                        <Button variant="outline" size="sm" className="flex-1 text-[10px] h-9 font-bold border-slate-100 hover:bg-slate-50 text-slate-400 hover:text-amber-600 tracking-widest uppercase">
+                                            AGENDA
                                         </Button>
-                                    </Link>
-                                    <Button variant="outline" size="sm" className="flex-1 text-[10px] h-9 font-bold border-slate-100 hover:bg-slate-50 text-slate-400 hover:text-amber-600 tracking-widest uppercase">
-                                        AGENDA
-                                    </Button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleAdminRole(teacher.id)}
+                                        className={`w-full py-1.5 px-3 rounded text-[11px] font-semibold transition-colors border ${
+                                            teacher.isAdmin
+                                                ? "bg-slate-50 border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
+                                                : "bg-indigo-50 border-indigo-100 text-indigo-700 hover:bg-indigo-100"
+                                        }`}
+                                    >
+                                        {teacher.isAdmin ? "Révoquer droits Admin" : "Désigner Administrateur École"}
+                                    </button>
                                 </div>
                             </CardContent>
                         </Card>

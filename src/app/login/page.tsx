@@ -27,13 +27,15 @@ export default function LoginPage() {
             
             // Redirect based on user role
             const rolePaths: Record<string, string> = {
+                SUPERADMIN: "superadmin",
                 ADMIN: "admin",
                 ENSEIGNANT: "teacher",
                 PARENT: "parent",
                 ELEVE: "eleve"
             };
 
-            const path = rolePaths[response.data.user.role] || "dashboard";
+            const userRole = (response?.data?.user?.role || '').toUpperCase();
+            const path = rolePaths[userRole] || "dashboard";
             console.log(`🚀 Redirecting to /${path}/dashboard`);
             router.push(`/${path}/dashboard`);
         } catch (err) {

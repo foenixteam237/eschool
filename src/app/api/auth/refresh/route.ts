@@ -1,35 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { extractBearerToken, isJwtToken } from '@/lib/auth';
-
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/v1/api').replace(/\/$/, '');
+const DEFAULT_API_URL = 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_URL).replace(/\/$/, '');
 
 export async function POST(request: NextRequest) {
   try {
-    const authorization = request.headers.get('Authorization');
-    const token = extractBearerToken(authorization);
-
-    if (!token || !isJwtToken(token)) {
+    const token = request.headers.get('Authorization');
+    
+    if (!token) {
       return NextResponse.json(
-        { message: 'No valid authorization token provided', error: 'NO_TOKEN' },
+        { message: 'No authorization token provided', error: 'NO_TOKEN' },
         { status: 401 }
       );
     }
 
+    console.log('[API Route] POST /api/auth/refresh');
+    
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        'Authorization': token,
       },
     });
 
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('[API Route] Backend error:', data);
       return NextResponse.json(data, { status: response.status });
     }
 
+    console.log('[API Route] Token refreshed successfully');
     return NextResponse.json(data);
   } catch (error) {
     console.error('[API Route] Error:', error);

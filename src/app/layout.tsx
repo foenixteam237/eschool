@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="fr" suppressHydrationWarning>
-            <body className={cn(inter.className, "min-h-screen bg-gray-50 text-slate-900 antialiased")}>
+            <body suppressHydrationWarning className={cn(inter.className, "min-h-screen bg-gray-50 text-slate-900 antialiased")}>
                 <AuthProvider>
                     {children}
                 </AuthProvider>

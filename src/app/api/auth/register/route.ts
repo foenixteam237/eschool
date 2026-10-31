@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3500/api/v1').replace(/\/$/, '');
+const DEFAULT_API_URL = 'http://127.0.0.1:3500/api/v1';
+const RAW_API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_URL).replace(/\/$/, '');
+const API_URL = RAW_API_URL.replace('//localhost:3500', '//127.0.0.1:3500');
 
 export async function POST(request: NextRequest) {
   try {

@@ -77,19 +77,20 @@ export default function AdminGradesPage() {
         const students: any[] = [];
         let idCounter = 1;
 
-        levels.forEach(level => {
-            const numStudents = Math.floor(Math.random() * 5) + 3; // 3-7 students per level for demo
+        levels.forEach((level, lIdx) => {
+            const numStudents = 5;
             for (let i = 0; i < numStudents; i++) {
+                const avg = Number((15.2 - i * 0.75 + (lIdx % 2) * 0.4).toFixed(2));
                 students.push({
                     id: idCounter++,
                     name: `Élève ${level} ${i + 1}`,
                     matricule: `24G${1000 + idCounter}`,
                     class: `${level} A`,
-                    average: Number((Math.random() * 10 + 8).toFixed(2)),
+                    average: avg,
                     rank: i + 1,
-                    status: "Nouveau",
-                    absences: Math.floor(Math.random() * 5),
-                    decision: Math.random() > 0.7 ? "Félicitations" : undefined
+                    status: i % 4 === 0 ? "Redoublant" : "Nouveau",
+                    absences: (i * 2) % 4,
+                    decision: avg >= 14 ? "Félicitations" : avg >= 12 ? "Encouragements" : undefined
                 });
             }
         });

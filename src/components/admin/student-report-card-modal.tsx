@@ -270,7 +270,7 @@ export default function StudentReportCardModal({ student, students, grades = [],
                                                                         {getAppreciation(g.grade)}
                                                                     </td>
                                                                     <td className="border border-black text-center text-[9px] align-middle">
-                                                                        {Math.ceil(Math.random() * 5)}e
+                                                                        {((idx % 4) + 1)}e
                                                                     </td>
                                                                     <td className="border border-black"></td>
                                                                 </tr>
