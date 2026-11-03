@@ -124,3 +124,24 @@ html {
     opacity: 1;
   }
 }
+
+/* Print Optimization for PDF Generation */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  nav, aside, header {
+    display: none !important;
+  }
+  .printable-timetable-doc {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+}

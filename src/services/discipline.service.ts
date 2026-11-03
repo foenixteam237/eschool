@@ -4,8 +4,7 @@
  */
 
 import { authService } from './auth.service';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export interface CreateExitTicketPayload {
   studentId: string;
@@ -43,6 +42,10 @@ export interface DisciplineIncident {
 }
 
 class DisciplineService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -56,7 +59,7 @@ class DisciplineService {
    */
   async createExitTicket(data: CreateExitTicketPayload): Promise<ExitTicket> {
     const response = await fetch(
-      `${API_URL}/discipline/tickets`,
+      `${this.apiUrl}/discipline/tickets`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -78,7 +81,7 @@ class DisciplineService {
    */
   async createIncident(data: CreateIncidentPayload): Promise<DisciplineIncident> {
     const response = await fetch(
-      `${API_URL}/discipline/incidents`,
+      `${this.apiUrl}/discipline/incidents`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),

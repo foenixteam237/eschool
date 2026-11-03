@@ -3,37 +3,73 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SuperAdminSidebar } from "@/components/shared/superadmin-sidebar";
-import { SuperAdminBadge } from "@/components/shared/superadmin-badge";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { Search, Bell, ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function SuperadminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    // Ensure auth state is initialized
     checkAuth();
   }, [checkAuth]);
 
   useEffect(() => {
-    // Redirect non-superadmin users
     if (user && user.role !== "SUPERADMIN") {
       router.replace("/");
     }
   }, [user, router]);
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
+      {/* Sidebar */}
       <SuperAdminSidebar />
 
-      <div className="flex-1 p-6">
-        <header className="flex items-center justify-end mb-6">
-          <div className="flex items-center gap-4">
-            <SuperAdminBadge />
+      {/* Main Container */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+          {/* Search bar */}
+          <div className="relative w-72 sm:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+            <Input
+              placeholder="Rechercher un établissement, une facture, un tenant..."
+              className="pl-9 h-9 text-xs bg-slate-50 border-slate-200/80 rounded-full focus:bg-white focus:ring-1 focus:ring-indigo-600 w-full"
+            />
+          </div>
+
+          {/* Right badges & profile */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            {/* SaaS Status Pill */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>SaaS Multi-tenant v2.5 En ligne</span>
+            </div>
+
+            {/* Notification Bell */}
+            <button
+              className="relative p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Notifications"
+            >
+              <Bell size={18} />
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center">
+                8
+              </span>
+            </button>
+
+            {/* Profile Avatar Thumbnail */}
+            <div className="flex items-center gap-2 cursor-pointer pl-1">
+              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white text-xs font-black flex items-center justify-center ring-2 ring-indigo-100 shadow-xs">
+                SA
+              </div>
+              <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
+            </div>
           </div>
         </header>
 
-        <main className="space-y-6">
+        {/* Content View */}
+        <main className="flex-1 p-6 sm:p-8 space-y-6">
           {children}
         </main>
       </div>

@@ -4,9 +4,8 @@
  */
 
 import { authService } from './auth.service';
+import { getApiBaseUrl } from '@/lib/api-config';
 import { Student } from '@/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
 
 export interface CreateStudentPayload {
   studentId: string;
@@ -181,6 +180,10 @@ export const mockStudentsDatabase: StudentExtended[] = [
 ];
 
 class StudentsService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -236,7 +239,7 @@ class StudentsService {
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const response = await fetch(
-        `${API_URL}/students?${params.toString()}`,
+        `${this.apiUrl}/students?${params.toString()}`,
         { headers: this.getAuthHeaders(), signal: controller.signal }
       );
       clearTimeout(timeoutId);
@@ -287,7 +290,7 @@ class StudentsService {
   async getStudent(id: string): Promise<StudentExtended> {
     try {
       const response = await fetch(
-        `${API_URL}/students/${id}`,
+        `${this.apiUrl}/students/${id}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -320,7 +323,7 @@ class StudentsService {
     };
 
     const response = await fetch(
-      `${API_URL}/students`,
+      `${this.apiUrl}/students`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -350,7 +353,7 @@ class StudentsService {
     if (data.status) payload.status = data.status;
 
     const response = await fetch(
-      `${API_URL}/students/${id}`,
+      `${this.apiUrl}/students/${id}`,
       {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
@@ -372,7 +375,7 @@ class StudentsService {
    */
   async deleteStudent(id: string): Promise<void> {
     const response = await fetch(
-      `${API_URL}/students/${id}`,
+      `${this.apiUrl}/students/${id}`,
       {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
@@ -391,7 +394,7 @@ class StudentsService {
   async getStudentsByClass(classId: string): Promise<StudentExtended[]> {
     try {
       const response = await fetch(
-        `${API_URL}/classes/${classId}/students`,
+        `${this.apiUrl}/classes/${classId}/students`,
         { headers: this.getAuthHeaders() }
       );
 

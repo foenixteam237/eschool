@@ -4,8 +4,7 @@
  */
 
 import { authService } from './auth.service';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export interface CreateSubjectPayload {
   name: string;
@@ -40,6 +39,10 @@ const mockSubjects: SubjectItem[] = [
 ];
 
 class SubjectsService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -54,7 +57,7 @@ class SubjectsService {
    */
   async createSubject(data: CreateSubjectPayload): Promise<SubjectItem> {
     const response = await fetch(
-      `${API_URL}/subjects`,
+      `${this.apiUrl}/subjects`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -78,7 +81,7 @@ class SubjectsService {
     try {
       const query = classId ? `?classId=${classId}` : '';
       const response = await fetch(
-        `${API_URL}/subjects${query}`,
+        `${this.apiUrl}/subjects${query}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -95,6 +98,16 @@ class SubjectsService {
     }
     return mockSubjects;
   }
+  /**
+   * Supprimer une matière (DELETE /api/v1/subjects/:id)
+   */
+  async deleteSubject(id: string): Promise<void> {
+    await fetch(`${this.apiUrl}/subjects/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+  }
 }
 
 export const subjectsService = new SubjectsService();
+

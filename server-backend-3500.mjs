@@ -353,6 +353,67 @@ const db = {
       status: 'SUCCESS',
       paidAt: new Date().toISOString(),
       cashier: 'Intendant M. Mbarga'
+    },
+    {
+      id: 'pay_2',
+      receiptNumber: 'REC-2026-LGL-00090',
+      studentId: 'std_2',
+      studentMatricule: '2026-LGL-002',
+      studentFullName: 'Aminatou Oumarou',
+      className: 'Première A4 Allemand',
+      schoolId: 'sch_1',
+      schoolName: 'Lycée Général Leclerc de Yaoundé',
+      amount: 35000,
+      currency: 'XAF',
+      feeType: 'SCOLARITE_TRANCHE_1',
+      feeDescription: '1ère Tranche Scolarité',
+      paymentMethod: 'ORANGE_MONEY',
+      transactionId: 'OM-CMR-847291',
+      status: 'SUCCESS',
+      paidAt: new Date().toISOString(),
+      cashier: 'Intendance eSchool'
+    }
+  ],
+  teachers: [
+    {
+      id: 'tch_1',
+      name: 'Jean DUPONT',
+      email: 'j.dupont@ecole.com',
+      phone: '+237 699 00 11 22',
+      subjects: ['Mathématiques', 'Physique-Chimie'],
+      classes: ['6ème A', '3ème B', 'Terminale C'],
+      isAdmin: true,
+      matricule: 'ENS-2024-001'
+    },
+    {
+      id: 'tch_2',
+      name: 'Marie SMITH',
+      email: 'm.smith@ecole.com',
+      phone: '+237 677 33 44 55',
+      subjects: ['Anglais'],
+      classes: ['6ème A', '5ème B', 'Terminale C'],
+      isAdmin: false,
+      matricule: 'ENS-2024-002'
+    },
+    {
+      id: 'tch_3',
+      name: 'Paul LEFEBVRE',
+      email: 'p.lefebvre@ecole.com',
+      phone: '+237 655 77 88 99',
+      subjects: ['SVT'],
+      classes: ['3ème B', '2nde C'],
+      isAdmin: false,
+      matricule: 'ENS-2024-003'
+    },
+    {
+      id: 'tch_4',
+      name: 'Alice MVE',
+      email: 'a.mve@ecole.com',
+      phone: '+237 688 11 22 33',
+      subjects: ['Mathématiques'],
+      classes: ['4ème A', 'Terminale C'],
+      isAdmin: false,
+      matricule: 'ENS-2024-004'
     }
   ],
   disciplineIncidents: [],
@@ -983,6 +1044,119 @@ const server = http.createServer(async (req, res) => {
         data: incident,
         timestamp: new Date().toISOString()
       });
+    }
+
+    // 16. PAYMENTS CRUD: GET /api/v1/payments, POST /api/v1/payments, DELETE /api/v1/payments/:id
+    if (pathname === '/api/v1/payments') {
+      if (req.method === 'GET') {
+        const studentId = parsedUrl.searchParams.get('studentId');
+        let results = db.payments;
+        if (studentId) {
+          results = results.filter(p => p.studentId === studentId);
+        }
+        return sendJson(res, 200, {
+          success: true,
+          data: results,
+          total: results.length,
+          timestamp: new Date().toISOString()
+        });
+      }
+      if (req.method === 'POST') {
+        const body = await parseBody(req);
+        const newPayment = {
+          id: `pay_${Date.now()}`,
+          receiptNumber: `REC-2026-LGL-${Math.floor(10000 + Math.random() * 90000)}`,
+          studentId: body.studentId || 'std_1',
+          studentFullName: body.label || body.studentFullName || 'Paiement Scolarité',
+          amount: Number(body.amount) || 0,
+          currency: 'XAF',
+          feeType: body.type || body.category || 'Scolarité',
+          paymentMethod: body.paymentMethod || 'CASH',
+          status: 'SUCCESS',
+          paidAt: new Date().toISOString(),
+          description: body.description || body.label || '',
+          category: body.category || 'Scolarité',
+          type: body.type || 'income'
+        };
+        db.payments.unshift(newPayment);
+        return sendJson(res, 201, {
+          success: true,
+          data: newPayment,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    const paymentDeleteMatch = pathname.match(/^\/api\/v1\/payments\/([^/]+)$/);
+    if (paymentDeleteMatch && req.method === 'DELETE') {
+      const pId = paymentDeleteMatch[1];
+      db.payments = db.payments.filter(p => p.id !== pId);
+      return sendJson(res, 200, { success: true, message: 'Paiement supprimé' });
+    }
+
+    // 17. TEACHERS CRUD: GET /api/v1/teachers, POST /api/v1/teachers, DELETE /api/v1/teachers/:id
+    if (pathname === '/api/v1/teachers') {
+      if (req.method === 'GET') {
+        return sendJson(res, 200, {
+          success: true,
+          data: db.teachers,
+          total: db.teachers.length,
+          timestamp: new Date().toISOString()
+        });
+      }
+      if (req.method === 'POST') {
+        const body = await parseBody(req);
+        const newTeacher = {
+          id: `tch_${Date.now()}`,
+          name: body.name || `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'Nouvel Enseignant',
+          email: body.email || `prof.${Date.now()}@ecole.cm`,
+          phone: body.phone || '+237 600 00 00 00',
+          subjects: Array.isArray(body.subjects) ? body.subjects : [body.subject || 'Enseignement Général'],
+          classes: Array.isArray(body.classes) ? body.classes : ['Terminale C'],
+          isAdmin: Boolean(body.isAdmin),
+          matricule: body.matricule || `ENS-${Date.now().toString().slice(-4)}`,
+          createdAt: new Date().toISOString()
+        };
+        db.teachers.push(newTeacher);
+        return sendJson(res, 201, {
+          success: true,
+          data: newTeacher,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    const teacherDeleteMatch = pathname.match(/^\/api\/v1\/teachers\/([^/]+)$/);
+    if (teacherDeleteMatch && req.method === 'DELETE') {
+      const tId = teacherDeleteMatch[1];
+      db.teachers = db.teachers.filter(t => t.id !== tId);
+      return sendJson(res, 200, { success: true, message: 'Enseignant retiré' });
+    }
+
+    // 18. CLASSES DELETE / PATCH
+    const classIdMatch = pathname.match(/^\/api\/v1\/classes\/([^/]+)$/);
+    if (classIdMatch) {
+      const clsId = classIdMatch[1];
+      if (req.method === 'DELETE') {
+        db.classes = db.classes.filter(c => c.id !== clsId);
+        return sendJson(res, 200, { success: true, message: 'Classe supprimée' });
+      }
+      if (req.method === 'PATCH') {
+        const body = await parseBody(req);
+        const clsIndex = db.classes.findIndex(c => c.id === clsId);
+        if (clsIndex !== -1) {
+          db.classes[clsIndex] = { ...db.classes[clsIndex], ...body, updatedAt: new Date().toISOString() };
+          return sendJson(res, 200, { success: true, data: db.classes[clsIndex] });
+        }
+      }
+    }
+
+    // 19. SUBJECTS DELETE
+    const subjectIdMatch = pathname.match(/^\/api\/v1\/subjects\/([^/]+)$/);
+    if (subjectIdMatch && req.method === 'DELETE') {
+      const sbjId = subjectIdMatch[1];
+      db.subjects = db.subjects.filter(s => s.id !== sbjId);
+      return sendJson(res, 200, { success: true, message: 'Matière supprimée' });
     }
 
     // Default Fallback for unspecified endpoints

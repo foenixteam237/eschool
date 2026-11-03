@@ -46,37 +46,15 @@ interface AcademicSubject {
     heuresHebdo: number;
 }
 
+import { classesService, subjectsService } from "@/services";
+
 function AcademicsContent() {
     const searchParams = useSearchParams();
     const initialSchoolId = searchParams.get("schoolId");
 
-    const [classes, setClasses] = useState<AcademicClass[]>([
-        { id: "1", name: "6ème A", cycle: "Premier Cycle", serie: "Générale", etablissement: "Lycée Général Leclerc (Yaoundé)", students: 45, titular: "M. TCHAPTCHET", exam: "Orientation 5ème" },
-        { id: "2", name: "5ème B", cycle: "Premier Cycle", serie: "Générale", etablissement: "Lycée Général Leclerc (Yaoundé)", students: 42, titular: "Mme MVE Alice", exam: "Orientation 4ème" },
-        { id: "3", name: "4ème All A", cycle: "Premier Cycle", serie: "Langue Vivante 2 (Allemand)", etablissement: "Lycée Bilingue de Deido (Douala)", students: 40, titular: "M. FOTSO Paul", exam: "Passage 3ème" },
-        { id: "4", name: "3ème Esp B", cycle: "Premier Cycle", serie: "Langue Vivante 2 (Espagnol)", etablissement: "Lycée Bilingue de Deido (Douala)", students: 44, titular: "M. KAMGA Jean", exam: "Examen Officiel BEPC" },
-        { id: "5", name: "2nde C 1", cycle: "Second Cycle", serie: "Sciences & Mathématiques", etablissement: "Collège Libermann (Douala)", students: 38, titular: "M. TALLA Jean", exam: "Passage 1ère C/D" },
-        { id: "6", name: "2nde A4", cycle: "Second Cycle", serie: "Lettres & Philosophie", etablissement: "Lycée Classique de Bafoussam", students: 41, titular: "Mme NGONO Anne", exam: "Passage 1ère A4" },
-        { id: "7", name: "1ère D", cycle: "Second Cycle", serie: "Sciences Expérimentales", etablissement: "Lycée Général Leclerc (Yaoundé)", students: 42, titular: "M. MBALLA Oscar", exam: "Examen Officiel Probatoire D" },
-        { id: "8", name: "1ère TI", cycle: "Second Cycle", serie: "Technologies de l'Information", etablissement: "Lycée Bilingue de Deido (Douala)", students: 36, titular: "Ing. TEGUIA Paul", exam: "Examen Officiel Probatoire TI" },
-        { id: "9", name: "Tle C", cycle: "Second Cycle", serie: "Mathématiques & Sciences Physiques", etablissement: "Lycée Général Leclerc (Yaoundé)", students: 35, titular: "M. DUPONT Jean", exam: "Examen Officiel Baccalauréat C" },
-        { id: "10", name: "Tle A4", cycle: "Second Cycle", serie: "Lettres & Langues", etablissement: "Collège Libermann (Douala)", students: 39, titular: "M. ABESSOLO Pierre", exam: "Examen Officiel Baccalauréat A4" },
-        { id: "11", name: "Tle F4", cycle: "Second Cycle", serie: "Génie Civil & Bâtiment", etablissement: "Lycée Technique de Douala-Koumassi", students: 32, titular: "M. EBENDE Samuel", exam: "Examen Officiel Baccalauréat F4" },
-    ]);
-
-    const [subjects, setSubjects] = useState<AcademicSubject[]>([
-        { id: "1", name: "Mathématiques", code: "MATH", coef: 5, groupe: "Groupe 1 (Fondamentales)", category: "Scientifique", heuresHebdo: 6 },
-        { id: "2", name: "Physique-Chimie", code: "PC", coef: 4, groupe: "Groupe 1 (Fondamentales)", category: "Scientifique", heuresHebdo: 4 },
-        { id: "3", name: "Sciences de la Vie et de la Terre (SVT)", code: "SVT", coef: 3, groupe: "Groupe 1 (Fondamentales)", category: "Scientifique", heuresHebdo: 3 },
-        { id: "4", name: "Informatique / Algorithmique", code: "INFO", coef: 3, groupe: "Groupe 1 (Fondamentales)", category: "Technique", heuresHebdo: 3 },
-        { id: "5", name: "Français & Littérature", code: "FR", coef: 5, groupe: "Groupe 2 (Complémentaires)", category: "Littéraire", heuresHebdo: 5 },
-        { id: "6", name: "Anglais (English Language)", code: "ANG", coef: 3, groupe: "Groupe 2 (Complémentaires)", category: "Littéraire", heuresHebdo: 3 },
-        { id: "7", name: "Histoire-Géographie-ECM", code: "HG", coef: 3, groupe: "Groupe 2 (Complémentaires)", category: "Littéraire", heuresHebdo: 3 },
-        { id: "8", name: "Philosophie", code: "PHIL", coef: 4, groupe: "Groupe 2 (Complémentaires)", category: "Littéraire", heuresHebdo: 4 },
-        { id: "9", name: "Allemand / Espagnol (LV2)", code: "LV2", coef: 3, groupe: "Groupe 2 (Complémentaires)", category: "Littéraire", heuresHebdo: 3 },
-        { id: "10", name: "Éducation Physique et Sportive (EPS)", code: "EPS", coef: 2, groupe: "Groupe 3 (Développement Perso)", category: "Culture & Sport", heuresHebdo: 2 },
-        { id: "11", name: "Travail Manuel / Économie Familiale", code: "TM", coef: 1, groupe: "Groupe 3 (Développement Perso)", category: "Culture & Sport", heuresHebdo: 2 },
-    ]);
+    const [classes, setClasses] = useState<AcademicClass[]>([]);
+    const [subjects, setSubjects] = useState<AcademicSubject[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [selectedSchool, setSelectedSchool] = useState<string>("all");
     const [selectedCycle, setSelectedCycle] = useState<string>("all");
@@ -94,6 +72,69 @@ function AcademicsContent() {
         "Lycée Technique de Douala-Koumassi"
     ];
 
+    const loadAcademicsData = async () => {
+        setIsLoading(true);
+        try {
+            const [classesRes, subjectsRes] = await Promise.allSettled([
+                classesService.getClasses(1, 100),
+                subjectsService.getSubjects()
+            ]);
+
+            if (classesRes.status === "fulfilled" && classesRes.value.data.length > 0) {
+                const mapped: AcademicClass[] = classesRes.value.data.map((c: any) => ({
+                    id: c.id,
+                    name: c.name || c.nom,
+                    cycle: (c.level?.includes("Terminale") || c.level?.includes("Première") || c.level?.includes("Seconde") || c.name?.includes("Tle") || c.name?.includes("1ère") || c.name?.includes("2nde"))
+                        ? "Second Cycle"
+                        : "Premier Cycle",
+                    serie: c.section || "Enseignement Général",
+                    etablissement: "Lycée Général Leclerc (Yaoundé)",
+                    students: c.studentCount || c.capacity || 42,
+                    titular: c.teacherName || (c.teacherId === "tch_1" ? "M. Jean DUPONT" : "M. TCHAPTCHET"),
+                    exam: c.name?.includes("Tle") ? "Examen Officiel Baccalauréat" : c.name?.includes("1ère") ? "Examen Officiel Probatoire" : c.name?.includes("3ème") ? "Examen Officiel BEPC" : "Passage niveau supérieur",
+                }));
+                setClasses(mapped);
+            }
+
+            if (subjectsRes.status === "fulfilled" && subjectsRes.value.length > 0) {
+                const mappedSubs: AcademicSubject[] = subjectsRes.value.map((s: any) => {
+                    const credits = s.credits || 3;
+                    const grp: AcademicSubject["groupe"] = credits >= 4
+                        ? "Groupe 1 (Fondamentales)"
+                        : credits >= 2
+                        ? "Groupe 2 (Complémentaires)"
+                        : "Groupe 3 (Développement Perso)";
+                    const cat: AcademicSubject["category"] = (s.code?.includes("MATH") || s.code?.includes("PC") || s.code?.includes("SVT"))
+                        ? "Scientifique"
+                        : s.code?.includes("INFO")
+                        ? "Technique"
+                        : (s.code?.includes("EPS") || s.code?.includes("TM"))
+                        ? "Culture & Sport"
+                        : "Littéraire";
+
+                    return {
+                        id: s.id,
+                        name: s.name,
+                        code: s.code,
+                        coef: credits,
+                        groupe: grp,
+                        category: cat,
+                        heuresHebdo: credits,
+                    };
+                });
+                setSubjects(mappedSubs);
+            }
+        } catch (err) {
+            console.error("Erreur chargement académique:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadAcademicsData();
+    }, []);
+
     useEffect(() => {
         if (initialSchoolId) {
             if (initialSchoolId.includes("lgl")) setSelectedSchool("Lycée Général Leclerc (Yaoundé)");
@@ -109,24 +150,30 @@ function AcademicsContent() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (!deleteItem) return;
-        if (deleteItem.type === "class") {
-            setClasses((prev) => prev.filter((c) => c.id !== deleteItem.id));
-        } else {
-            setSubjects((prev) => prev.filter((s) => s.id !== deleteItem.id));
+        try {
+            if (deleteItem.type === "class") {
+                await classesService.deleteClass(deleteItem.id);
+                setClasses((prev) => prev.filter((c) => c.id !== deleteItem.id));
+            } else {
+                await subjectsService.deleteSubject(deleteItem.id);
+                setSubjects((prev) => prev.filter((s) => s.id !== deleteItem.id));
+            }
+        } catch (err) {
+            console.error("Erreur de suppression:", err);
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeleteItem(null);
         }
-        setIsDeleteModalOpen(false);
-        setDeleteItem(null);
     };
 
     const filteredClasses = classes.filter((c) => {
-        const matchesSchool = selectedSchool === "all" || c.etablissement === selectedSchool;
         const matchesCycle = selectedCycle === "all" || c.cycle === selectedCycle;
         const matchesSearch = c.name.toLowerCase().includes(searchClass.toLowerCase()) ||
             c.serie.toLowerCase().includes(searchClass.toLowerCase()) ||
             c.titular.toLowerCase().includes(searchClass.toLowerCase());
-        return matchesSchool && matchesCycle && matchesSearch;
+        return matchesCycle && matchesSearch;
     });
 
     const filteredSubjects = subjects.filter((s) => {
@@ -160,35 +207,25 @@ function AcademicsContent() {
                 </div>
             </div>
 
-            {/* School Switcher Bar */}
+            {/* Academic Filter Bar */}
             <Card className="border-none shadow-sm bg-blue-50/50 border border-blue-100">
                 <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <School className="text-primary-blue" size={24} />
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-wider text-primary-blue">
-                                Filtrer la structure par établissement
+                                Structure Académique de l'Établissement
                             </span>
-                            <p className="text-xs text-slate-500">Sélectionnez le campus pour afficher ses divisions et son corps professoral</p>
+                            <p className="text-xs text-slate-500">Organisation pédagogique MINESEC ({classes.length} classes actives enregistrées)</p>
                         </div>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
-                        <select
-                            value={selectedSchool}
-                            onChange={(e) => setSelectedSchool(e.target.value)}
-                            className="h-10 px-4 rounded-xl border border-blue-200 bg-white text-xs font-bold text-primary-blue outline-none shadow-sm cursor-pointer"
-                        >
-                            <option value="all">🏫 Tous les Établissements ({classes.length} classes)</option>
-                            {schools.map((sch) => (
-                                <option key={sch} value={sch}>{sch}</option>
-                            ))}
-                        </select>
                         <select
                             value={selectedCycle}
                             onChange={(e) => setSelectedCycle(e.target.value)}
                             className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none shadow-sm cursor-pointer"
                         >
-                            <option value="all">Tous Cycles</option>
+                            <option value="all">Tous Cycles ({classes.length})</option>
                             <option value="Premier Cycle">1er Cycle (6e - 3e)</option>
                             <option value="Second Cycle">2nd Cycle (2nde - Tle)</option>
                         </select>

@@ -4,8 +4,7 @@
  */
 
 import { authService } from './auth.service';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export interface CreatePaymentPayload {
   amount: number;
@@ -73,6 +72,10 @@ export interface OfficialReceipt {
 }
 
 class PaymentsService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -95,7 +98,7 @@ class PaymentsService {
     };
 
     const response = await fetch(
-      `${API_URL}/payments`,
+      `${this.apiUrl}/payments`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -118,7 +121,7 @@ class PaymentsService {
    */
   async payWithMoMo(paymentId: string, data: MoMoPaymentPayload): Promise<MoMoPaymentResponse> {
     const response = await fetch(
-      `${API_URL}/payments/${paymentId}/momo`,
+      `${this.apiUrl}/payments/${paymentId}/momo`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -141,7 +144,7 @@ class PaymentsService {
   async getReceipt(paymentId: string): Promise<OfficialReceipt> {
     try {
       const response = await fetch(
-        `${API_URL}/payments/${paymentId}/receipt`,
+        `${this.apiUrl}/payments/${paymentId}/receipt`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -192,7 +195,7 @@ class PaymentsService {
   async getPayments(page: number = 1, limit: number = 20): Promise<{ data: any[]; total: number }> {
     try {
       const response = await fetch(
-        `${API_URL}/payments?page=${page}&limit=${limit}`,
+        `${this.apiUrl}/payments?page=${page}&limit=${limit}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -241,7 +244,7 @@ class PaymentsService {
   async getPaymentsByStudent(studentId: string): Promise<any[]> {
     try {
       const response = await fetch(
-        `${API_URL}/payments?studentId=${studentId}`,
+        `${this.apiUrl}/payments?studentId=${studentId}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -272,7 +275,7 @@ class PaymentsService {
    */
   async getPayment(id: string): Promise<any> {
     const response = await fetch(
-      `${API_URL}/payments/${id}`,
+      `${this.apiUrl}/payments/${id}`,
       { headers: this.getAuthHeaders() }
     );
     if (!response.ok) throw new Error('Échec récupération paiement');
@@ -285,7 +288,7 @@ class PaymentsService {
    */
   async updatePayment(id: string, data: any): Promise<any> {
     const response = await fetch(
-      `${API_URL}/payments/${id}`,
+      `${this.apiUrl}/payments/${id}`,
       {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
@@ -301,7 +304,7 @@ class PaymentsService {
    * Supprimer un paiement (DELETE /api/v1/payments/:id)
    */
   async deletePayment(id: string): Promise<void> {
-    await fetch(`${API_URL}/payments/${id}`, {
+    await fetch(`${this.apiUrl}/payments/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });

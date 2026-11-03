@@ -4,8 +4,7 @@
  */
 
 import { authService } from './auth.service';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY';
 
@@ -43,6 +42,10 @@ const mockTimetable: TimetableSlot[] = [
 ];
 
 class TimetableService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -56,7 +59,7 @@ class TimetableService {
    */
   async createSlot(data: CreateTimetableSlotPayload): Promise<TimetableSlot> {
     const response = await fetch(
-      `${API_URL}/timetable`,
+      `${this.apiUrl}/timetable`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -79,7 +82,7 @@ class TimetableService {
   async getClassTimetable(classId: string): Promise<TimetableSlot[]> {
     try {
       const response = await fetch(
-        `${API_URL}/timetable/class/${classId}`,
+        `${this.apiUrl}/timetable/class/${classId}`,
         { headers: this.getAuthHeaders() }
       );
 

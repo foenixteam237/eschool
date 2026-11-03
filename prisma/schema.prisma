@@ -1,0 +1,410 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum SchoolType {
+  GENERAL
+  TECHNIQUE
+  BILINGUE
+}
+
+enum SubscriptionStatus {
+  ACTIF
+  SUSPENDU
+  EN_ATTENTE
+  EXPIRE
+}
+
+enum SubscriptionPlan {
+  STANDARD
+  PRO
+  EXCELLENCE
+}
+
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+  FAILED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  RETARD
+  JUSTIFIE
+}
+
+// 1. Établissement (Multi-Tenant Root)
+model School {
+  id          String     @id @default(uuid())
+  code        String     @unique // ex: LGL-YDE-001
+  name        String
+  type        SchoolType @default(GENERAL)
+  address     String?
+  phone       String?
+  email       String     @unique
+  ville       String
+  region      String
+  slogan      String?
+  timezone    String     @default("Africa/Douala")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Isolation multi-tenant : relations directes
+  subscriptions  Subscription[]
+  users          User[]
+  admins         Admin[]
+  teachers       Teacher[]
+  students       Student[]
+  parents        Parent[]
+  classes        Class[]
+  subjects       Subject[]
+  grades         Grade[]
+  attendances    Attendance[]
+  payments       Payment[]
+  expenses       Expense[]
+  staff          Staff[]
+  auditLogs      AuditLog[]
+
+  @@map("schools")
+}
+
+// 2. Utilisateurs Communs
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  role           Role
+  firstName      String
+  lastName       String
+  phone          String?
+  avatarUrl      String?
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Scope d'école (NULL uniquement pour le SUPERADMIN SaaS)
+  schoolId       String?
+  school         School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Profils spécialisés
+  adminProfile   Admin?
+  teacherProfile Teacher?
+  studentProfile Student?
+  parentProfile  Parent?
+  staffProfile   Staff?
+  auditLogs      AuditLog[]
+
+  @@index([schoolId])
+  @@index([email])
+  @@map("users")
+}
+
+// 3. Profil Admin d'Établissement
+model Admin {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  isMainAdmin  Boolean  @default(false)
+  position     String?  // Proviseur, Censeur, Intendant
+  canManageAdmins Boolean @default(true) // Pouvoir de désigner un autre admin
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([schoolId])
+  @@map("admins")
+}
+
+// 4. Profil Enseignant
+model Teacher {
+  id           String     @id @default(uuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  matricule    String     @unique
+  specialty    String?    // Mathématiques, Physique, Français, etc.
+
+  classes      Class[]    @relation("TeacherClasses")
+  grades       Grade[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([schoolId])
+  @@map("teachers")
+}
+
+// 5. Profil Élève
+model Student {
+  id             String       @id @default(uuid())
+  userId         String       @unique
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  matricule      String       @unique // ex: 2026-LGL-001
+  dateOfBirth    DateTime
+  placeOfBirth   String
+  gender         String       // M / F
+  bloodGroup     String?      // O+, A+, B+, etc.
+  nationality    String       @default("Camerounaise")
+  classId        String
+  class          Class        @relation(fields: [classId], references: [id])
+
+  parents        ParentStudent[]
+  grades         Grade[]
+  attendances    Attendance[]
+  payments       Payment[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([schoolId])
+  @@index([classId])
+  @@index([matricule])
+  @@map("students")
+}
+
+// 6. Profil Parent / Tuteur
+model Parent {
+  id           String          @id @default(uuid())
+  userId       String          @unique
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId     String
+  school       School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  profession   String?
+  address      String?
+
+  children     ParentStudent[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([schoolId])
+  @@map("parents")
+}
+
+// 7. Table de Liaison Parent <-> Élève
+model ParentStudent {
+  parentId     String
+  parent       Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  relationship String   @default("Pere") // Pere, Mere, Tuteur
+
+  @@id([parentId, studentId])
+  @@map("parent_students")
+}
+
+// 8. Classes
+model Class {
+  id           String     @id @default(uuid())
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name         String     // ex: Terminale C, 6ème A
+  level        String     // Terminale, 1ère, 6ème
+  section      String     // Scientifique, Littéraire, Général, Bilingue
+  capacity     Int        @default(45)
+  schoolYearId String     // ex: sy_2025_2026
+  teacherId    String?    // Professeur principal
+  teacher      Teacher?   @relation("TeacherClasses", fields: [teacherId], references: [id])
+
+  students     Student[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([schoolId, name, schoolYearId])
+  @@index([schoolId])
+  @@map("classes")
+}
+
+// 9. Matières
+model Subject {
+  id           String     @id @default(uuid())
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name         String     // Mathématiques, Physique-Chimie, Français
+  code         String     // MATH, PC, FRAN
+  coefficient  Decimal    @default(3.0) @db.Decimal(3, 1)
+  level        String?
+
+  grades       Grade[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([schoolId, code])
+  @@index([schoolId])
+  @@map("subjects")
+}
+
+// 10. Notes & Évaluations (MINESEC 6 séquences / 3 trimestres)
+model Grade {
+  id           String     @id @default(uuid())
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId    String
+  subject      Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId    String
+  teacher      Teacher    @relation(fields: [teacherId], references: [id])
+  score        Decimal    @db.Decimal(4, 2) // Note sur 20
+  maxScore     Decimal    @default(20.0) @db.Decimal(4, 2)
+  termId       String     // Trimestre 1, 2, 3
+  sequenceId   String     // Séquence 1 à 6
+  type         String     @default("SEQUENCE") // DEVOIR, SEQUENCE, EXAMEN
+  appreciation String?
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@index([subjectId])
+  @@map("grades")
+}
+
+// 11. Présences & Absences
+model Attendance {
+  id           String           @id @default(uuid())
+  schoolId     String
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date         DateTime         @db.Date
+  status       AttendanceStatus @default(PRESENT)
+  hours        Int              @default(1)
+  reason       String?
+  justified    Boolean          @default(false)
+  justificationDocUrl String?
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId, date])
+  @@map("attendances")
+}
+
+// 12. Frais & Paiements Scolaires (APEE, Scolarité)
+model Payment {
+  id              String        @id @default(uuid())
+  schoolId        String
+  school          School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  receiptNumber   String        @unique // ex: REC-2026-LGL-00089
+  amount          Decimal       @db.Decimal(12, 2)
+  currency        String        @default("XAF")
+  feeType         String        // SCOLARITE_TRANCHE_1, APEE, EXAMEN
+  method          String        // MTN_MOMO, ORANGE_MONEY, ESPECES, BANQUE
+  transactionId   String?       @unique
+  status          PaymentStatus @default(SUCCESS)
+  paidAt          DateTime      @default(now())
+  cashierName     String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@map("payments")
+}
+
+// 13. Dépenses Internes de l'Établissement (Strictement inaccessibles au SuperAdmin)
+model Expense {
+  id           String     @id @default(uuid())
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title        String
+  amount       Decimal    @db.Decimal(12, 2)
+  currency     String     @default("XAF")
+  category     String     // Fournitures, Maintenance, Salaires locaux, APEE
+  approvedBy   String
+  date         DateTime   @default(now())
+  receiptUrl   String?
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([schoolId])
+  @@map("expenses")
+}
+
+// 14. Personnel Non-Enseignant & Administratif
+model Staff {
+  id           String     @id @default(uuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId     String
+  school       School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  position     String     // Secrétaire, Surveillant général, Comptable, Infirmier
+  department   String
+  contractType String?    // CDD, CDI, Vacataire
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([schoolId])
+  @@map("staff")
+}
+
+// 15. Abonnements SaaS eSchool (Géré exclusivement par le SuperAdmin)
+model Subscription {
+  id                String             @id @default(uuid())
+  schoolId          String
+  school            School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan   @default(PRO)
+  status            SubscriptionStatus @default(ACTIF)
+  annualFeeFCFA     Decimal            @db.Decimal(12, 2)
+  startDate         DateTime           @db.Date
+  endDate           DateTime           @db.Date
+  autoRenew         Boolean            @default(true)
+  lastPaymentDate   DateTime?
+  referenceInvoice  String?
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([schoolId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// 16. Journaux d'Audit & Sécurité (Traçabilité des accès et modifications)
+model AuditLog {
+  id           String     @id @default(uuid())
+  schoolId     String?    // NULL pour actions plateforme SaaS
+  school       School?    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String     // CREATE, UPDATE, DELETE, LOGIN, EXPORT_REPORT_CARD
+  resource     String     // Student, Grade, Payment, School
+  details      String?    @db.Text
+  ipAddress    String?
+
+  createdAt    DateTime   @default(now())
+
+  @@index([schoolId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

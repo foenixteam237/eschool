@@ -103,7 +103,7 @@ export function hasPermissionForPath(pathname: string, token: string | undefined
   }
 
   if (pathname.startsWith("/admin")) {
-    return role === "ADMIN" || role === "SUPERADMIN";
+    return role === "ADMIN";
   }
 
   if (pathname.startsWith("/teacher")) {

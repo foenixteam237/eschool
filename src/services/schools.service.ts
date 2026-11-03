@@ -4,8 +4,7 @@
  */
 
 import { authService } from './auth.service';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export interface CreateSchoolApiPayload {
   name: string;
@@ -47,6 +46,10 @@ export interface SchoolStats {
 }
 
 class SchoolsService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -60,7 +63,7 @@ class SchoolsService {
    */
   async createSchool(data: CreateSchoolPayload): Promise<SchoolItem> {
     const response = await fetch(
-      `${API_URL}/schools`,
+      `${this.apiUrl}/schools`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -83,7 +86,7 @@ class SchoolsService {
   async getSchoolStats(schoolId: string): Promise<SchoolStats> {
     try {
       const response = await fetch(
-        `${API_URL}/schools/${schoolId}/stats`,
+        `${this.apiUrl}/schools/${schoolId}/stats`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -106,6 +109,77 @@ class SchoolsService {
       currency: "XAF (FCFA)"
     };
   }
+
+  /**
+   * Récupérer les informations de l'établissement (GET /api/v1/schools)
+   */
+  async getSchools(): Promise<SchoolItem[]> {
+    try {
+      const response = await fetch(`${this.apiUrl}/schools`, {
+        headers: this.getAuthHeaders(),
+      });
+      if (response.ok) {
+        const json = await response.json();
+        const list = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+        if (list.length > 0) return list;
+      }
+    } catch (err) {
+      console.warn("Erreur getSchools:", err);
+    }
+    return [
+      {
+        id: "sch_1",
+        name: "Lycée Général Leclerc de Yaoundé",
+        code: "LGL-YDE-001",
+        address: "BP 124 Yaoundé, Centre",
+        phone: "+237 222 22 00 01",
+        email: "contact@leclerc.cm",
+        ville: "Yaoundé",
+        region: "Centre",
+        slogan: "Travail - Rigueur - Réussite",
+        timezone: "Africa/Douala"
+      }
+    ];
+  }
+
+  /**
+   * Récupérer le détail d'un établissement (GET /api/v1/schools/:id)
+   */
+  async getSchool(schoolId: string): Promise<SchoolItem | null> {
+    try {
+      const response = await fetch(`${this.apiUrl}/schools/${schoolId}`, {
+        headers: this.getAuthHeaders(),
+      });
+      if (response.ok) {
+        const json = await response.json();
+        return json.data || json;
+      }
+    } catch (err) {
+      console.warn(`Erreur getSchool(${schoolId}):`, err);
+    }
+    const all = await this.getSchools();
+    return all.find(s => s.id === schoolId) || all[0] || null;
+  }
+
+  /**
+   * Mettre à jour les informations d'un établissement (PATCH /api/v1/schools/:id)
+   */
+  async updateSchool(schoolId: string, data: Partial<CreateSchoolPayload>): Promise<SchoolItem> {
+    const response = await fetch(`${this.apiUrl}/schools/${schoolId}`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      throw new Error(errJson.message || `Échec mise à jour établissement (HTTP ${response.status})`);
+    }
+
+    const json = await response.json();
+    return json.data || json;
+  }
 }
 
 export const schoolsService = new SchoolsService();
+

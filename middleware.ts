@@ -73,10 +73,9 @@ export function middleware(request: NextRequest) {
   // Extraction du rôle
   const role = (payload.role || payload.user?.role || '').toUpperCase();
 
-  // 1. Contrôle d'accès SuperAdmin
+  // 1. Contrôle d'accès SuperAdmin (Réservé exclusivement à la gestion SaaS eSchool)
   if (pathname.startsWith('/superadmin')) {
     if (role !== 'SUPERADMIN') {
-      // Rediriger vers l'espace correspondant au rôle de l'utilisateur
       if (role === 'ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', request.url));
       if (role === 'ENSEIGNANT') return NextResponse.redirect(new URL('/teacher/dashboard', request.url));
       if (role === 'PARENT') return NextResponse.redirect(new URL('/parent/dashboard', request.url));
@@ -86,9 +85,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Si l'utilisateur est SUPERADMIN, interdire l'accès à la vie interne des écoles
+  if (role === 'SUPERADMIN') {
+    return NextResponse.redirect(new URL('/superadmin/dashboard', request.url));
+  }
+
   // 2. Contrôle d'accès Admin d'établissement
   if (pathname.startsWith('/admin')) {
-    if (role !== 'ADMIN' && role !== 'SUPERADMIN') {
+    if (role !== 'ADMIN') {
       if (role === 'ENSEIGNANT') return NextResponse.redirect(new URL('/teacher/dashboard', request.url));
       if (role === 'PARENT') return NextResponse.redirect(new URL('/parent/dashboard', request.url));
       if (role === 'ELEVE') return NextResponse.redirect(new URL('/eleve/dashboard', request.url));
@@ -99,7 +103,7 @@ export function middleware(request: NextRequest) {
 
   // 3. Contrôle d'accès Enseignant
   if (pathname.startsWith('/teacher')) {
-    if (role !== 'ENSEIGNANT' && role !== 'ADMIN' && role !== 'SUPERADMIN') {
+    if (role !== 'ENSEIGNANT' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();
@@ -107,7 +111,7 @@ export function middleware(request: NextRequest) {
 
   // 4. Contrôle d'accès Parent
   if (pathname.startsWith('/parent')) {
-    if (role !== 'PARENT' && role !== 'SUPERADMIN') {
+    if (role !== 'PARENT') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();
@@ -115,7 +119,7 @@ export function middleware(request: NextRequest) {
 
   // 5. Contrôle d'accès Élève
   if (pathname.startsWith('/eleve')) {
-    if (role !== 'ELEVE' && role !== 'SUPERADMIN') {
+    if (role !== 'ELEVE') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();

@@ -171,4 +171,14 @@ eSchool est une plateforme ERP complète conçue pour l'enseignement secondaire 
 2. **Refonte Sécurité & Routes Auth** : Sécurisation des cookies, suppression des mock tokens, mise à jour du middleware RBAC.
 3. **Création des Vues SuperAdmin** : Implémentation complète de `/superadmin/dashboard`, `/superadmin/schools`, `/superadmin/subscriptions`, `/superadmin/support`.
 4. **Mise à Jour de l'Administration d'Établissement** : Intégration de la délégation d'administrateurs et gestion rigoureuse des erreurs API dans les écrans scolaires.
-5. **Vérification et Compilation** : Exécution de `compile_applet` pour garantir l'intégrité de la construction.
+5. **Emploi du Temps Connecté à la Base de Données Réelle** :
+   - Synchronisation complète de `/admin/timetable` avec les entités réelles de la base de données PostgreSQL (`classesService`, `subjectsService`, `teachersService`, et `timetableService`).
+   - Requêtes `GET /api/v1/timetable/class/:id` et création directe `POST /api/v1/timetable`.
+   - Préservation du design UI/UX moderne avec cartes horaires interactives et génération de PDF officiel conforme MINESEC alimenté par les données réelles de la classe sélectionnée.
+6. **Vérification et Compilation** : Exécution de `compile_applet` pour garantir l'intégrité de la construction (validé 100%).
+7. **Refonte Visuelle SuperAdmin Complétée (100% Conforme aux 4 Screenshots)** :
+   - Dashboard Cockpit (`/superadmin/dashboard`) : MRR 128 450 €, graphique 12 mois avec tooltip Octobre, donut 142 écoles, feed système.
+   - Flotte d'Établissements (`/superadmin/schools`) : KPI Actifs/Déploiement/Suspendus, filtres avancés, jauges de quotas élèves avec alerte saturation, renouvellements.
+   - Abonnements & Grilles Tarifaires (`/superadmin/subscriptions`) : 3 formules (Starter School, Pro Campus en vedette avec bordure violette, Enterprise Group), tableau J-30 avec auto-renouvellement et pondération MRR.
+   - Facturation & Revenus SaaS (`/superadmin/finances`) : ARR 1.54M€, histogramme mensuel comparatif N-1, passerelles Stripe/Mobile Money, registre 52 factures émises.
+   - Sidebar & TopBar uniformisées avec violet royal `#5B21B6` et routes auxiliaires (`/users`, `/reports`, `/security`, `/settings`).

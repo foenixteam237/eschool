@@ -41,7 +41,7 @@ export function Sidebar({ role }: SidebarProps) {
     const menuItems = {
         admin: [
             { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
-            { icon: School, label: "Établissements", href: "/admin/etablissements" },
+            { icon: School, label: "Mon Établissement", href: "/admin/etablissements" },
             { icon: BookOpen, label: "Classes & Matières", href: "/admin/academics" },
             { icon: Users, label: "Élèves", href: "/admin/students" },
             { icon: GraduationCap, label: "Enseignants", href: "/admin/teachers" },

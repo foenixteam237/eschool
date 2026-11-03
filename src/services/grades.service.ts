@@ -4,9 +4,8 @@
  */
 
 import { authService } from './auth.service';
+import { getApiBaseUrl } from '@/lib/api-config';
 import { Grade } from '@/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
 
 export interface CreateGradePayload {
   score: number;
@@ -100,6 +99,10 @@ export interface GradeWithDetails extends Grade {
 }
 
 class GradesService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -123,7 +126,7 @@ class GradesService {
     };
 
     const response = await fetch(
-      `${API_URL}/grades`,
+      `${this.apiUrl}/grades`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -146,7 +149,7 @@ class GradesService {
   async getReportCard(studentId: string): Promise<OfficialReportCard> {
     try {
       const response = await fetch(
-        `${API_URL}/grades/report-card/${studentId}`,
+        `${this.apiUrl}/grades/report-card/${studentId}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -257,7 +260,7 @@ class GradesService {
       if (subjectId) params.append('subjectId', subjectId);
 
       const response = await fetch(
-        `${API_URL}/grades?${params.toString()}`,
+        `${this.apiUrl}/grades?${params.toString()}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -343,7 +346,7 @@ class GradesService {
   async getGradesByClassAndSubject(classId: string, subjectId: string): Promise<any[]> {
     try {
       const response = await fetch(
-        `${API_URL}/grades?classId=${classId}&subjectId=${subjectId}`,
+        `${this.apiUrl}/grades?classId=${classId}&subjectId=${subjectId}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -372,7 +375,7 @@ class GradesService {
       if (classId) params.append('classId', classId);
 
       const response = await fetch(
-        `${API_URL}/grades/stats?${params.toString()}`,
+        `${this.apiUrl}/grades/stats?${params.toString()}`,
         { headers: this.getAuthHeaders() }
       );
 
@@ -403,7 +406,7 @@ class GradesService {
     if (data.status) payload.status = data.status;
 
     const response = await fetch(
-      `${API_URL}/grades/${id}`,
+      `${this.apiUrl}/grades/${id}`,
       {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
@@ -425,7 +428,7 @@ class GradesService {
    */
   async deleteGrade(id: string): Promise<void> {
     const response = await fetch(
-      `${API_URL}/grades/${id}`,
+      `${this.apiUrl}/grades/${id}`,
       {
         method: 'DELETE',
         headers: this.getAuthHeaders(),

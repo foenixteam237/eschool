@@ -28,19 +28,33 @@ import Link from "next/link";
 import { DeleteModal } from "@/components/shared/delete-modal";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { teachersService, TeacherItem } from "@/services";
 
 function AdminTeachersPageInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const selectedSubject = searchParams.get("subject");
     const [searchTerm, setSearchTerm] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [teachers, setTeachers] = useState([
-        { id: "1", name: "Jean DUPONT", subjects: ["Maths", "Physique"], classes: ["6ème A", "3ème B"], email: "j.dupont@ecole.com", phone: "699 00 11 22", isAdmin: true },
-        { id: "2", name: "Marie SMITH", subjects: ["Anglais"], classes: ["6ème A", "5ème B", "Terminal S"], email: "m.smith@ecole.com", phone: "677 33 44 55", isAdmin: false },
-        { id: "3", name: "Paul LEFEBVRE", subjects: ["SVT"], classes: ["3ème B", "2nde C"], email: "p.lefebvre@ecole.com", phone: "655 77 88 99", isAdmin: false },
-        { id: "4", name: "Alice MVE", subjects: ["Maths"], classes: ["4ème A", "Tle C"], email: "a.mve@ecole.com", phone: "688 11 22 33", isAdmin: false },
-    ]);
+    const [teachers, setTeachers] = useState<TeacherItem[]>([]);
+
+    const loadTeachers = async () => {
+        setIsLoading(true);
+        try {
+            const list = await teachersService.getTeachers();
+            setTeachers(list);
+        } catch (err) {
+            console.error("Erreur chargement enseignants:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadTeachers();
+    }, []);
 
     const toggleAdminRole = (id: string) => {
         setTeachers(prev => prev.map(t => {
@@ -56,7 +70,7 @@ function AdminTeachersPageInner() {
 
     // Extract unique subjects and their counts
     const subjectStats = teachers.reduce((acc, t) => {
-        t.subjects.forEach(sub => {
+        (t.subjects || []).forEach(sub => {
             acc[sub] = (acc[sub] || 0) + 1;
         });
         return acc;
@@ -66,7 +80,7 @@ function AdminTeachersPageInner() {
 
     const filteredTeachers = selectedSubject === "TOUT" || !selectedSubject
         ? teachers
-        : teachers.filter(t => t.subjects.includes(selectedSubject));
+        : teachers.filter(t => (t.subjects || []).includes(selectedSubject));
 
     const finalTeachers = filteredTeachers.filter(t =>
         t.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,8 +99,13 @@ function AdminTeachersPageInner() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (selectedTeacher) {
+            try {
+                await teachersService.deleteTeacher(selectedTeacher.id);
+            } catch (err) {
+                console.error("Erreur suppression enseignant:", err);
+            }
             setTeachers(prev => prev.filter(t => t.id !== selectedTeacher.id));
             setSelectedTeacher(null);
         }

@@ -12,6 +12,7 @@ export * from './classes.service';
 export * from './subjects.service';
 export * from './timetable.service';
 export * from './discipline.service';
+export * from './teachers.service';
 export type { SchoolItem, SchoolStats, CreateSchoolApiPayload } from './schools.service';
 export * from './superadmin.service';
 
@@ -27,6 +28,7 @@ import { timetableService } from './timetable.service';
 import { disciplineService } from './discipline.service';
 import { schoolsService } from './schools.service';
 import { superAdminService } from './superadmin.service';
+import { teachersService } from './teachers.service';
 
 // Services instances
 export {
@@ -41,4 +43,6 @@ export {
   disciplineService,
   schoolsService,
   superAdminService,
+  teachersService,
 };
+

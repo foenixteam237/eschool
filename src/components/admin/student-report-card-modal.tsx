@@ -118,20 +118,20 @@ export default function StudentReportCardModal({ student, students, grades = [],
                                             <p className="font-bold text-[10px]">République du Cameroun</p>
                                             <p className="text-[9px]">Paix - Travail - Patrie</p>
                                             <p className="text-[9px] mt-1">Ministère des Enseignements Secondaires</p>
-                                            <p className="text-[9px]">Région du Centre</p>
-                                            <p className="text-[9px]">Délégation Départementale du Mfoundi</p>
-                                            <p className="font-black text-[11px] mt-1">LYCÉE BILINGUE D'EXCELLENCE</p>
-                                            <p className="text-[9px]">B.P. 1234 YAOUNDÉ</p>
+                                            <p className="text-[9px]">Région du Centre • Mfoundi</p>
+                                            <p className="font-black text-[11px] mt-1 text-slate-900">LYCÉE GÉNÉRAL LECLERC</p>
+                                            <p className="text-[9px]">B.P. 124 YAOUNDÉ</p>
                                         </div>
 
                                         {/* Center: Logo */}
                                         <div className="flex-1 flex flex-col items-center justify-start -mt-2">
-                                            <div className="w-[80px] h-[80px] rounded-full border-[3px] border-double border-black flex items-center justify-center p-1 mb-1">
+                                            <div className="w-[80px] h-[80px] rounded-full border-[3px] border-double border-black flex items-center justify-center p-1 mb-1 bg-white">
                                                 <div className="text-center">
-                                                    <span className="block text-[24px] leading-none">🦅</span>
+                                                    <span className="block text-[22px] leading-none">🇨🇲</span>
+                                                    <span className="block text-[9px] font-black mt-0.5">MINESEC</span>
                                                 </div>
                                             </div>
-                                            <div className="text-[8px] italic font-bold">Discipline - Travail - Succès</div>
+                                            <div className="text-[8px] italic font-bold">Travail - Rigueur - Réussite</div>
                                         </div>
 
                                         {/* Right: English Header */}
@@ -139,10 +139,9 @@ export default function StudentReportCardModal({ student, students, grades = [],
                                             <p className="font-bold text-[10px]">Republic of Cameroon</p>
                                             <p className="text-[9px]">Peace - Work - Fatherland</p>
                                             <p className="text-[9px] mt-1">Ministry of Secondary Education</p>
-                                            <p className="text-[9px]">Center Region</p>
-                                            <p className="text-[9px]">Mfoundi Divisional Delegation</p>
-                                            <p className="font-black text-[11px] mt-1">GOVERNMENT BILINGUAL HIGH SCHOOL</p>
-                                            <p className="text-[9px]">P.O. BOX 1234 YAOUNDE</p>
+                                            <p className="text-[9px]">Centre Region • Mfoundi</p>
+                                            <p className="font-black text-[11px] mt-1 text-slate-900">GOVERNMENT HIGH SCHOOL LECLERC</p>
+                                            <p className="text-[9px]">P.O. BOX 124 YAOUNDE</p>
                                         </div>
                                     </div>
 
@@ -154,7 +153,7 @@ export default function StudentReportCardModal({ student, students, grades = [],
                                                 : `BULLETIN DE NOTES ${sequenceInfo.type === 'sequence' ? 'DE LA' : 'DU'} ${sequenceInfo.name.toUpperCase()}`
                                             }
                                         </h1>
-                                        <p className="text-sm font-bold italic mt-1">Année Scolaire 2024 - 2025</p>
+                                        <p className="text-sm font-bold italic mt-1">Année Scolaire 2025 - 2026</p>
                                     </div>
 
                                     {/* 3. Student Details Box */}

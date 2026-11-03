@@ -4,8 +4,8 @@
  */
 
 import { API_CONFIG } from './constants';
+import { getApiBaseUrl } from './api-config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const JWT_STORAGE_KEY = process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || 'eschool_token';
 
 export class APIError extends Error {
@@ -41,11 +41,11 @@ interface ApiResponse<T> {
 }
 
 class HttpClient {
-  private baseUrl: string;
+  private baseUrl?: string;
   private timeout: number;
   private onTokenExpired?: () => void;
 
-  constructor(baseUrl: string = API_URL, timeout: number = API_CONFIG.TIMEOUT) {
+  constructor(baseUrl?: string, timeout: number = API_CONFIG.TIMEOUT) {
     this.baseUrl = baseUrl;
     this.timeout = timeout;
   }
@@ -73,7 +73,8 @@ class HttpClient {
       skipAuth = false,
     } = options;
 
-    const url = `${this.baseUrl}${endpoint}`;
+    const base = this.baseUrl || getApiBaseUrl();
+    const url = `${base}${endpoint}`;
     const token = this.getAuthToken();
 
     const requestHeaders: Record<string, string> = {
