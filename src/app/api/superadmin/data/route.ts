@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBackendApiUrl } from "@/lib/api-config";
 
-const BACKEND_BASE = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://eschool-api-seven.vercel.app/api/v1").replace(/\/$/, "");
+const getBackendBase = () => getBackendApiUrl();
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -11,7 +12,8 @@ async function getBackendToken(): Promise<string> {
   }
 
   try {
-    const res = await fetch(`${BACKEND_BASE}/auth/login`, {
+    const backendBase = getBackendBase();
+    const res = await fetch(`${backendBase}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -47,12 +49,13 @@ export async function GET() {
       "Content-Type": "application/json",
     };
 
+    const backendBase = getBackendBase();
     // Parallel fetch of real database entities
     const [schoolsRes, paymentsRes, studentsRes, teachersRes] = await Promise.allSettled([
-      fetch(`${BACKEND_BASE}/schools`, { headers }),
-      fetch(`${BACKEND_BASE}/payments`, { headers }),
-      fetch(`${BACKEND_BASE}/students`, { headers }),
-      fetch(`${BACKEND_BASE}/teachers`, { headers }),
+      fetch(`${backendBase}/schools`, { headers }),
+      fetch(`${backendBase}/payments`, { headers }),
+      fetch(`${backendBase}/students`, { headers }),
+      fetch(`${backendBase}/teachers`, { headers }),
     ]);
 
     const schoolsData = schoolsRes.status === "fulfilled" && schoolsRes.value.ok ? await schoolsRes.value.json() : null;

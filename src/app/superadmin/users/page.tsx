@@ -216,7 +216,7 @@ export default function SuperAdminUsersPage() {
       {/* Table */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[750px] text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
                 <th className="py-3 px-5 text-[10px] font-black uppercase tracking-wider text-slate-400">

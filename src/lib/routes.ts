@@ -3,7 +3,9 @@
  * Centralized API endpoint definitions
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiBaseUrl } from './api-config';
+
+const API_BASE = getApiBaseUrl();
 
 export const ROUTES = {
   // Auth

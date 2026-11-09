@@ -370,7 +370,7 @@ export default function SuperAdminSubscriptionsPage() {
       </div>
 
       {/* Packages Plateforme eSchool Header */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
             Packages Plateforme eSchool (Tarifs FCFA)
@@ -635,7 +635,7 @@ export default function SuperAdminSubscriptionsPage() {
 
         {/* Renewals Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[850px] text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
                 <th className="py-3 px-5 text-[10px] font-black uppercase tracking-wider text-slate-400">

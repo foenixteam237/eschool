@@ -5,8 +5,7 @@
 import { authService } from './auth.service';
 import { apiClient } from '@/lib/api-client';
 import { ROUTES } from '@/lib/routes';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export interface AttendanceRecord {
   id: string;
@@ -42,6 +41,10 @@ export interface AttendanceStats {
 }
 
 class AttendanceService {
+  private get apiUrl() {
+    return getApiBaseUrl();
+  }
+
   private getAuthHeaders() {
     const token = authService.getToken();
     return {
@@ -55,7 +58,7 @@ class AttendanceService {
    */
   async getAttendance(page: number = 1, limit: number = 20): Promise<{ data: AttendanceRecord[]; total: number }> {
     const response = await fetch(
-      `${API_URL}/attendance?page=${page}&limit=${limit}`,
+      `${this.apiUrl}/attendance?page=${page}&limit=${limit}`,
       { headers: this.getAuthHeaders() }
     );
 
@@ -68,7 +71,7 @@ class AttendanceService {
    */
   async getAttendanceRecord(id: string): Promise<AttendanceRecord> {
     const response = await fetch(
-      `${API_URL}/attendance/${id}`,
+      `${this.apiUrl}/attendance/${id}`,
       { headers: this.getAuthHeaders() }
     );
 
@@ -84,7 +87,7 @@ class AttendanceService {
     if (date) params.append('date', date);
 
     const response = await fetch(
-      `${API_URL}/attendance/class/${classId}?${params.toString()}`,
+      `${this.apiUrl}/attendance/class/${classId}?${params.toString()}`,
       { headers: this.getAuthHeaders() }
     );
 
@@ -105,7 +108,7 @@ class AttendanceService {
     if (endDate) params.append('endDate', endDate);
 
     const response = await fetch(
-      `${API_URL}/attendance/student/${studentId}?${params.toString()}`,
+      `${this.apiUrl}/attendance/student/${studentId}?${params.toString()}`,
       { headers: this.getAuthHeaders() }
     );
 
@@ -118,7 +121,7 @@ class AttendanceService {
    */
   async createAttendance(data: CreateAttendanceRequest): Promise<AttendanceRecord> {
     const response = await fetch(
-      `${API_URL}/attendance`,
+      `${this.apiUrl}/attendance`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -135,7 +138,7 @@ class AttendanceService {
    */
   async updateAttendance(id: string, data: UpdateAttendanceRequest): Promise<AttendanceRecord> {
     const response = await fetch(
-      `${API_URL}/attendance/${id}`,
+      `${this.apiUrl}/attendance/${id}`,
       {
         method: 'PATCH',
         headers: this.getAuthHeaders(),

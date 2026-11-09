@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_BASE = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://eschool-api-seven.vercel.app/api/v1").replace(/\/$/, "");
+import { getBackendApiUrl } from "@/lib/api-config";
 
 async function getBackendToken(): Promise<string> {
-  const res = await fetch(`${BACKEND_BASE}/auth/login`, {
+  const backendBase = getBackendApiUrl();
+  const res = await fetch(`${backendBase}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
       slogan: body.slogan || "Discipline - Travail - Succès",
     };
 
-    const response = await fetch(`${BACKEND_BASE}/schools`, {
+    const backendBase = getBackendApiUrl();
+    const response = await fetch(`${backendBase}/schools`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

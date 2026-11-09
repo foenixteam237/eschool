@@ -7,6 +7,28 @@ const nextConfig = {
         ignoreDuringBuilds: true,
     },
     output: 'standalone',
+    async rewrites() {
+        return [
+            {
+                source: '/student/:path*',
+                destination: '/eleve/:path*',
+            },
+        ];
+    },
+    async redirects() {
+        return [
+            {
+                source: '/student',
+                destination: '/eleve/dashboard',
+                permanent: false,
+            },
+            {
+                source: '/dashboard/dashboard',
+                destination: '/eleve/dashboard',
+                permanent: false,
+            },
+        ];
+    },
 };
 
 export default nextConfig;

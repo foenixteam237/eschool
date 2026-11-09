@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const DEFAULT_API_URL = 'http://127.0.0.1:3500/api/v1';
-const RAW_API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_URL).replace(/\/$/, '');
-// Ensure local connection to port 3500 uses 127.0.0.1 to prevent IPv6 resolution mismatches
-const API_URL = RAW_API_URL.replace('//localhost:3500', '//127.0.0.1:3500');
+import { getBackendApiUrl } from '@/lib/api-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,11 +12,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const backendBase = getBackendApiUrl();
+    const loginUrl = `${backendBase}/auth/login`;
+    console.log('[Auth API] Forwarding login request to:', loginUrl);
 
-      const response = await fetch(`${API_URL}/auth/login`, {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s to allow Vercel serverless cold-starts
+
+    try {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,18 +31,20 @@ export async function POST(request: NextRequest) {
       });
       clearTimeout(timeoutId);
 
-      // Check if response is JSON
       const contentType = response.headers.get('content-type') || '';
+
+      // Check if response is JSON
       if (!contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('[Auth API] Non-JSON response received from backend:', text.slice(0, 200));
+        console.error('[Auth API] Non-JSON response received from backend:', response.status, text.slice(0, 300));
         return NextResponse.json(
           {
             success: false,
-            message: 'Le serveur backend a renvoyé un format inattendu. Vérifiez que le service backend est actif et accessible.',
-            error: 'BACKEND_INVALID_RESPONSE',
+            message: `Le serveur backend (${backendBase}) a répondu avec un format inattendu (HTTP ${response.status}).`,
+            error: 'BACKEND_BAD_GATEWAY',
+            details: text.slice(0, 150),
           },
-          { status: 502 }
+          { status: response.status >= 500 ? response.status : 502 }
         );
       }
 
@@ -74,19 +76,25 @@ export async function POST(request: NextRequest) {
       }
 
       return res;
-    } catch (networkError) {
-      console.error('[Auth API] Network connection failed to backend:', networkError);
+    } catch (networkError: unknown) {
+      clearTimeout(timeoutId);
+      const err = networkError as Error;
+      const isTimeout = err?.name === 'AbortError';
+      console.error('[Auth API] Network connection failed to backend:', loginUrl, err);
+
       return NextResponse.json(
         {
           success: false,
-          message: 'Impossible de joindre le serveur central eSchool. Vérifiez l\'état du backend ou votre connexion réseau.',
-          error: 'BACKEND_UNAVAILABLE',
+          message: isTimeout
+            ? `Délai d'attente dépassé (20s) lors de la connexion au serveur backend (${backendBase}). Le serveur met trop de temps à répondre.`
+            : `Impossible de joindre le serveur central eSchool (${backendBase}). Vérifiez que la variable BACKEND_API_URL est active.`,
+          error: isTimeout ? 'BACKEND_TIMEOUT' : 'BACKEND_UNAVAILABLE',
         },
-        { status: 503 }
+        { status: isTimeout ? 504 : 503 }
       );
     }
   } catch (error) {
-    console.error('[API Route] Unexpected error:', error);
+    console.error('[Auth API] Unexpected error in route handler:', error);
     const errorMessage = error instanceof Error ? error.message : 'Une erreur inattendue est survenue.';
     return NextResponse.json(
       { success: false, message: errorMessage, error: 'INTERNAL_ERROR' },

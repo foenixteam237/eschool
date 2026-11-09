@@ -11,14 +11,14 @@ export default function AdminLayout({
             <div className="hidden md:block">
                 <Sidebar role="admin" />
             </div>
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-w-0">
                 <Navbar
                     title="Portail Administrateur"
                     userName="Admin Principal"
                     userRole="Proviseur"
                     role="admin"
                 />
-                <main className="p-4 md:p-8">
+                <main className="p-3.5 sm:p-5 md:p-8 max-w-full overflow-x-hidden">
                     {children}
                 </main>
             </div>

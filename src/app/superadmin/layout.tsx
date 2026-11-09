@@ -7,6 +7,8 @@ import { useAuthStore } from "@/hooks/use-auth-store";
 import { Search, Bell, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+import { MobileMenu } from "@/components/shared/mobile-menu";
+
 export default function SuperadminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, checkAuth } = useAuthStore();
@@ -23,28 +25,33 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
-      {/* Sidebar */}
+      {/* Sidebar (Desktop) */}
       <SuperAdminSidebar />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-          {/* Search bar */}
-          <div className="relative w-72 sm:w-96">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
-            <Input
-              placeholder="Rechercher un établissement, une facture, un tenant..."
-              className="pl-9 h-9 text-xs bg-slate-50 border-slate-200/80 rounded-full focus:bg-white focus:ring-1 focus:ring-indigo-600 w-full"
-            />
+        <header className="h-16 bg-white border-b border-slate-200/80 px-3.5 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+          <div className="flex items-center gap-2.5 sm:gap-4 flex-1 max-w-md">
+            <div className="lg:hidden shrink-0">
+              <MobileMenu role="superadmin" />
+            </div>
+            {/* Search bar */}
+            <div className="relative flex-1 max-w-xs sm:max-w-sm">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+              <Input
+                placeholder="Rechercher un établissement..."
+                className="pl-9 h-9 text-xs bg-slate-50 border-slate-200/80 rounded-full focus:bg-white focus:ring-1 focus:ring-indigo-600 w-full"
+              />
+            </div>
           </div>
 
           {/* Right badges & profile */}
-          <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* SaaS Status Pill */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 shadow-xs">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>SaaS Multi-tenant v2.5 En ligne</span>
+              <span>SaaS v2.5 En ligne</span>
             </div>
 
             {/* Notification Bell */}
@@ -69,7 +76,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
         </header>
 
         {/* Content View */}
-        <main className="flex-1 p-6 sm:p-8 space-y-6">
+        <main className="flex-1 p-3.5 sm:p-6 md:p-8 space-y-6 max-w-full overflow-x-hidden">
           {children}
         </main>
       </div>

@@ -11,14 +11,14 @@ export default function TeacherLayout({
             <div className="hidden md:block">
                 <Sidebar role="teacher" />
             </div>
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-w-0">
                 <Navbar
                     title="Portail Enseignant"
                     userName="Jean DUPONT"
                     userRole="Enseignant"
                     role="teacher"
                 />
-                <main className="p-4 md:p-8">
+                <main className="p-3.5 sm:p-5 md:p-8 max-w-full overflow-x-hidden">
                     {children}
                 </main>
             </div>

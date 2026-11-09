@@ -1,7 +1,7 @@
 export const AUTH_COOKIE_NAME =
   process.env.NEXT_PUBLIC_JWT_STORAGE_KEY || "eschool_token";
 
-export type UserRole = "SUPERADMIN" | "ADMIN" | "ENSEIGNANT" | "PARENT" | "ELEVE";
+export type UserRole = "SUPERADMIN" | "ADMIN" | "ENSEIGNANT" | "TEACHER" | "PARENT" | "ELEVE" | "STUDENT";
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   if (!token || typeof token !== "string") {
@@ -68,7 +68,7 @@ export function getTokenRole(token: string | undefined): UserRole | null {
   }
 
   const role = payload.role.toUpperCase();
-  if (["SUPERADMIN", "ADMIN", "ENSEIGNANT", "PARENT", "ELEVE"].includes(role)) {
+  if (["SUPERADMIN", "ADMIN", "ENSEIGNANT", "TEACHER", "PARENT", "ELEVE", "STUDENT"].includes(role)) {
     return role as UserRole;
   }
 
@@ -107,15 +107,15 @@ export function hasPermissionForPath(pathname: string, token: string | undefined
   }
 
   if (pathname.startsWith("/teacher")) {
-    return role === "ENSEIGNANT";
+    return role === "ENSEIGNANT" || role === "TEACHER";
   }
 
   if (pathname.startsWith("/parent")) {
     return role === "PARENT";
   }
 
-  if (pathname.startsWith("/eleve")) {
-    return role === "ELEVE";
+  if (pathname.startsWith("/eleve") || pathname.startsWith("/student")) {
+    return role === "ELEVE" || role === "STUDENT";
   }
 
   return true;

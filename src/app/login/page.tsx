@@ -30,13 +30,15 @@ export default function LoginPage() {
                 SUPERADMIN: "superadmin",
                 ADMIN: "admin",
                 ENSEIGNANT: "teacher",
+                TEACHER: "teacher",
                 PARENT: "parent",
-                ELEVE: "eleve"
+                ELEVE: "eleve",
+                STUDENT: "eleve"
             };
 
             const userRole = (response?.data?.user?.role || '').toUpperCase();
-            const path = rolePaths[userRole] || "dashboard";
-            console.log(`🚀 Redirecting to /${path}/dashboard`);
+            const path = rolePaths[userRole] || (userRole.includes("STUDENT") || userRole.includes("ELEVE") ? "eleve" : "admin");
+            console.log(`🚀 Redirecting to /${path}/dashboard (role: ${userRole})`);
             router.push(`/${path}/dashboard`);
         } catch (err) {
             // Error is already set in the store

@@ -44,7 +44,7 @@ export function SuperAdminSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen overflow-y-auto">
+    <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200/80 flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen overflow-y-auto">
       <div>
         {/* Brand Logo Header */}
         <div className="p-6 pb-5 flex items-center gap-3">

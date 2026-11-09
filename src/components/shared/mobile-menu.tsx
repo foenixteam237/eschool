@@ -15,7 +15,11 @@ import {
     Settings,
     LogOut,
     School,
-    Calendar
+    Calendar,
+    Building2,
+    Banknote,
+    Shield,
+    TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -66,13 +70,38 @@ export function MobileMenu({ role }: MobileMenuProps) {
             { icon: MessageSquare, label: "Messagerie", href: "/eleve/messages" },
             { icon: Settings, label: "Mon Profil", href: "/eleve/profile" },
         ],
+        student: [
+            { icon: LayoutDashboard, label: "Dashboard", href: "/eleve/dashboard" },
+            { icon: BookOpen, label: "Mes Cours", href: "/eleve/courses" },
+            { icon: GraduationCap, label: "Mes Résultats", href: "/eleve/results" },
+            { icon: MessageSquare, label: "Messagerie", href: "/eleve/messages" },
+            { icon: Settings, label: "Mon Profil", href: "/eleve/profile" },
+        ],
+        enseignant: [
+            { icon: LayoutDashboard, label: "Dashboard", href: "/teacher/dashboard" },
+            { icon: Users, label: "Appel / Présences", href: "/teacher/attendance" },
+            { icon: GraduationCap, label: "Notes", href: "/teacher/grades" },
+            { icon: BookOpen, label: "Cahier de Texte", href: "/teacher/lesson-log" },
+            { icon: MessageSquare, label: "Messagerie", href: "/teacher/messages" },
+            { icon: Settings, label: "Mon Profil", href: "/teacher/profile" },
+        ],
+        superadmin: [
+            { icon: LayoutDashboard, label: "Tableau de bord", href: "/superadmin/dashboard" },
+            { icon: Building2, label: "Établissements", href: "/superadmin/schools" },
+            { icon: CreditCard, label: "Abonnements & Plans", href: "/superadmin/subscriptions" },
+            { icon: Banknote, label: "Facturation & Revenus", href: "/superadmin/finances" },
+            { icon: Users, label: "Utilisateurs & Rôles", href: "/superadmin/users" },
+            { icon: TrendingUp, label: "Rapports & Statistiques", href: "/superadmin/reports" },
+            { icon: Shield, label: "Audit & Sécurité", href: "/superadmin/security" },
+            { icon: Settings, label: "Paramètres Système", href: "/superadmin/settings" },
+        ],
     };
 
     const items = menuItems[role as keyof typeof menuItems] || [];
 
     return (
         <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-700">
                 <Menu size={24} className="text-slate-600" />
             </Button>
 

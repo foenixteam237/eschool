@@ -438,7 +438,7 @@ export default function AdminDebtorsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full min-w-[750px] text-left border-collapse">
                             <thead>
                                 <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-50 bg-slate-50/30">
                                     <th className="px-6 py-4">Élève / Classe</th>

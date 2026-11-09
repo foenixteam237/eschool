@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendApiUrl } from '@/lib/api-config';
 
 function getBackendBaseUrl(request?: NextRequest): string {
   // Check if client passed a custom Vercel backend in header or cookie
@@ -9,18 +10,7 @@ function getBackendBaseUrl(request?: NextRequest): string {
     return custom.replace(/\/$/, '').replace(/\/api\/v1$/, '') + '/api/v1';
   }
 
-  // If user configured a Vercel backend URL or remote URL in environment:
-  const remoteUrl =
-    process.env.BACKEND_API_URL ||
-    process.env.NEXT_PUBLIC_VERCEL_BACKEND_URL ||
-    process.env.VERCEL_BACKEND_URL;
-
-  if (remoteUrl && !remoteUrl.includes('localhost') && !remoteUrl.includes('127.0.0.1')) {
-    return remoteUrl.replace(/\/$/, '').replace(/\/api\/v1$/, '') + '/api/v1';
-  }
-
-  // Default to the configured Vercel production server
-  return 'https://eschool-api-seven.vercel.app/api/v1';
+  return getBackendApiUrl();
 }
 
 async function forwardRequest(request: NextRequest, { params }: { params: Promise<{ slug: string[] }> }) {

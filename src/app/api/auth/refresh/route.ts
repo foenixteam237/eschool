@@ -1,41 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const DEFAULT_API_URL = 'https://ais-dev-z254n7p7ochfsg2saokkto-835800199062.europe-west2.run.app/api/v1';
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_URL).replace(/\/$/, '');
+import { getBackendApiUrl } from '@/lib/api-config';
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('Authorization');
-    
+
     if (!token) {
       return NextResponse.json(
-        { message: 'No authorization token provided', error: 'NO_TOKEN' },
+        { message: 'Aucun jeton d\'autorisation fourni', error: 'NO_TOKEN' },
         { status: 401 }
       );
     }
 
-    console.log('[API Route] POST /api/auth/refresh');
-    
-    const response = await fetch(`${API_URL}/auth/refresh`, {
+    const backendBase = getBackendApiUrl();
+    console.log('[Auth API] POST /api/auth/refresh - Forwarding to:', `${backendBase}/auth/refresh`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(`${backendBase}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token,
       },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[API Route] Backend error:', data);
+      console.error('[Auth API] Backend error on refresh:', data);
       return NextResponse.json(data, { status: response.status });
     }
 
-    console.log('[API Route] Token refreshed successfully');
     return NextResponse.json(data);
   } catch (error) {
-    console.error('[API Route] Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    console.error('[Auth API] Error in refresh route:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
     return NextResponse.json(
       { message: errorMessage, error: 'REFRESH_ERROR' },
       { status: 500 }
